@@ -40,7 +40,7 @@ Separate repo (decided). vomatt-web keeps reading Sanity content (`next-sanity`,
 **Goal**: staff sign in with OTP; everything except `/login` needs a valid admin session.
 **Success Criteria**: signed-out request → redirected to `/login`; non-admin account → `auth.admin.forbidden` shown and no session; a token without `admin` in `roles` → signed out; an expired access token is refreshed once in the proxy and the page loads.
 **Tests**: port `tokens` and proxy tests from vomatt-web; add one for the role check and one for redirect-when-signed-out.
-**Status**: Not Started
+**Status**: Complete in code (unit tests for proxy, tokens and services). Not checked: a real OTP sign-in against vomatt-api, since `.env.local` has no `API_URL`/`SESSION_SECRET` yet.
 
 - Copy from vomatt-web `src/lib/api/`: `tokens.ts`, `auth.ts`, `client.ts`, `backend-fetch.ts`, `action.ts`, `auth-errors.ts`, `constants.ts`, `cursor.ts`, plus the auth parts of `services/auth.ts` and `proxy.tsx` (without locale detection unless the admin UI is bilingual).
 - Env: `API_URL`, `SESSION_SECRET` (= API `JWT_SECRET`), `NEXT_PUBLIC_SANITY_PROJECT_ID`, `NEXT_PUBLIC_SANITY_DATASET`, `NEXT_PUBLIC_SITE_URL`.
@@ -49,7 +49,7 @@ Separate repo (decided). vomatt-web keeps reading Sanity content (`next-sanity`,
 **Goal**: prove the pattern end to end on `/api/admin/tags`: list, create, edit.
 **Success Criteria**: an admin can list, create and edit a tag; API errors (`errorCode`) show as messages; a 403 sends the user back to login.
 **Tests**: service functions return `ActionResult` for success/error; the list renders items and an empty state.
-**Status**: Not Started
+**Status**: Complete in code, plus lookups (create, edit, activate/deactivate, delete). Lists come from public `GET /api/tags` and `GET /api/lookups/{type}`: the admin API has no list endpoints, so inactive lookups are found by type + key only. Not checked against a live admin session.
 
 - Admin layout: sidebar with "Tags", "Lookups" (Stage 4+), and a "Content (Sanity)" link to `/sanity`.
 - Lookups and other views follow the same pattern after this stage; they're outside this plan.

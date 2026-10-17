@@ -1,0 +1,84 @@
+# Runs when vomatt-api's contract (docs/frontend/openapi.json) changes on main:
+# Claude adds the matching admin features, cleans them up, reviews them and
+# opens a PR. Triggered by vomatt-api's notify-admin-contract workflow.
+name: Sync API contract
+
+on:
+  repository_dispatch:
+    types: [api-contract-updated]
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: vomatt-api commit to sync against (default main)
+        required: false
+
+concurrency:
+  group: sync-api-contract
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      API_SHA: ${{ github.event.client_payload.sha || inputs.sha || 'main' }}
+      API_BEFORE: ${{ github.event.client_payload.before || '' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # CLAUDE.md reads the contract from ../vomatt-api
+      - uses: actions/checkout@v4
+        with:
+          repository: vomatt/vomatt-api
+          ref: ${{ env.API_SHA }}
+          path: .vomatt-api
+          fetch-depth: 0
+          token: ${{ secrets.API_READ_TOKEN || github.token }}
+      - run: ln -s "$GITHUB_WORKSPACE/.vomatt-api" "$GITHUB_WORKSPACE/../vomatt-api"
+      # Keep the API checkout and the installed skill out of the PR's commits
+      - run: printf '.vomatt-api/\n.claude/skills/\n' >> .git/info/exclude
+
+      - name: Install vercel-react-best-practices skill
+        run: |
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/vercel-labs/agent-skills.git "$RUNNER_TEMP/agent-skills"
+          git -C "$RUNNER_TEMP/agent-skills" sparse-checkout set skills/react-best-practices
+          mkdir -p .claude/skills
+          cp -R "$RUNNER_TEMP/agent-skills/skills/react-best-practices" .claude/skills/vercel-react-best-practices
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: --max-turns 200
+          prompt: |
+            vomatt-api changed its API contract. The new contract is ../vomatt-api/docs/frontend/openapi.json
+            at commit ${{ env.API_SHA }} (previous main: "${{ env.API_BEFORE }}").
+
+            1. Find what changed for this app: run
+               `git -C ../vomatt-api diff ${{ env.API_BEFORE }} ${{ env.API_SHA }} -- docs/frontend/openapi.json docs/frontend/CHANGELOG.md`
+               (if the previous commit is empty or unknown, compare the admin paths in the contract with what
+               src/lib/api/services/ already covers). Only `/api/admin/**` paths, the auth endpoints and the
+               public endpoints admin views read from matter, as described in CLAUDE.md.
+            2. If nothing relevant changed, stop without creating a branch or PR.
+            3. Otherwise create a branch `sync/api-${{ env.API_SHA }}` (first 7 chars of the sha) and update the
+               admin app to match: services in src/lib/api/services/, types in src/types/, views under
+               src/app/(admin)/, and tests in src/__tests__/. Follow CLAUDE.md and the existing patterns, and apply
+               the vercel-react-best-practices skill in .claude/skills/ (do not commit that skill folder).
+            4. Run the /simplify skill on your changes, then the /code-review skill, and fix what they find.
+            5. `npm run lint`, `npx tsc --noEmit`, `npm run test` and `npm run build` must pass.
+            6. Commit with Conventional Commits (subject in Traditional Chinese, imperative, <= 50 chars),
+               push, and open a PR against main with `gh pr create` describing the contract changes covered.
+        env:
+          GH_TOKEN: ${{ github.token }}
