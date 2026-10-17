@@ -1,0 +1,361 @@
+/* Mirrors vomatt-web src/styles/global.css; change both */
+@import 'tailwindcss';
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Skeleton shimmer: a highlight stripe sweeping across the block, animated with
+   transform so it stays on the compositor. */
+@keyframes shimmer {
+	from { transform: translateX(-100%); }
+	to { transform: translateX(100%); }
+}
+@utility animate-shimmer {
+	position: relative;
+	overflow: hidden;
+	&::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background-image: linear-gradient(
+			90deg,
+			transparent,
+			color-mix(in oklch, var(--foreground) 6%, transparent),
+			transparent
+		);
+		animation: shimmer 1.6s ease-in-out infinite;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		&::after {
+			animation: none;
+		}
+	}
+}
+
+/* The ui/ components are Base UI, which reports state as presence attributes
+   (data-open, data-checked, data-active…). Drawer still wraps vaul, which reports
+   data-state="open|closed", so the open/closed variants match both. data-active
+   excludes "false" because Sidebar's useRender state can emit it as a value. */
+@custom-variant data-open (&:where([data-state="open"], [data-open]:not([data-open="false"])));
+@custom-variant data-closed (&:where([data-state="closed"], [data-closed]:not([data-closed="false"])));
+@custom-variant data-checked (&:where([data-checked]:not([data-checked="false"])));
+@custom-variant data-unchecked (&:where([data-unchecked]:not([data-unchecked="false"])));
+@custom-variant data-active (&:where([data-active]:not([data-active="false"])));
+@custom-variant data-horizontal (&:where([data-orientation="horizontal"]));
+@custom-variant data-vertical (&:where([data-orientation="vertical"]));
+
+:root {
+	/* vomatt brand: cool canvas, ink actions, Volt for the create action and "yours" */
+	--background: oklch(0.975 0.003 265);
+	--foreground: oklch(0.205 0.014 265);
+	--card: oklch(0.995 0.002 265);
+	--card-foreground: oklch(0.205 0.014 265);
+	--popover: oklch(0.995 0.002 265);
+	--popover-foreground: oklch(0.205 0.014 265);
+	--primary: oklch(0.205 0.014 265);
+	--primary-hover: oklch(0.31 0.018 265);
+	--primary-foreground: oklch(0.985 0.002 265);
+	--secondary: oklch(0.935 0.005 265);
+	--secondary-foreground: oklch(0.205 0.014 265);
+	--muted: oklch(0.955 0.004 265);
+	--muted-foreground: oklch(0.47 0.014 265);
+	--accent: oklch(0.955 0.004 265);
+	--accent-foreground: oklch(0.205 0.014 265);
+	--destructive: oklch(0.501 0.178 28.7);
+	--destructive-foreground: oklch(0.501 0.178 28.7);
+	--border: oklch(0.915 0.005 265);
+	--border-strong: oklch(0.85 0.008 265);
+	--input: oklch(0.62 0.012 265);
+	--ring: oklch(0.205 0.014 265);
+	--surface-soft: oklch(0.985 0.003 265);
+	--field: oklch(0.955 0.004 265);
+	--volt: oklch(0.946 0.153 118);
+	/* Ink on Volt in both themes: a literal, since var(--foreground) turns light in .dark */
+	--volt-foreground: oklch(0.205 0.014 265);
+	--volt-tint: oklch(0.975 0.045 118);
+	/* The create action: ink with a Volt icon on light, a Volt button on dark */
+	--create: var(--primary);
+	--create-hover: var(--primary-hover);
+	--create-foreground: var(--primary-foreground);
+	--create-icon: var(--volt);
+	--status-scheduled: oklch(0.914 0.017 304.8);
+	--status-open: oklch(0.917 0.024 145.4);
+	--status-closing: oklch(0.909 0.030 52.7);
+	--status-ended: oklch(0.904 0.040 86.1);
+	/* Avatar circles; the drawings are pictures, so they keep these in dark mode */
+	--avatar-sand: oklch(0.904 0.040 86.1);
+	--avatar-stone: oklch(0.924 0.008 98.9);
+	--avatar-green: oklch(0.917 0.024 145.4);
+	--avatar-sky: oklch(0.92 0.03 230);
+	--avatar-peach: oklch(0.909 0.030 52.7);
+	--avatar-lavender: oklch(0.914 0.017 304.8);
+	--chart-1: oklch(0.646 0.222 41.116);
+	--chart-2: oklch(0.6 0.118 184.704);
+	--chart-3: oklch(0.398 0.07 227.392);
+	--chart-4: oklch(0.828 0.189 84.429);
+	--chart-5: oklch(0.769 0.188 70.08);
+	--radius: 0.5rem;
+	/* The sidebar is one step deeper than the canvas; everything else aliases the base */
+	--sidebar: oklch(0.96 0.004 265);
+	--sidebar-foreground: var(--foreground);
+	--sidebar-primary: var(--primary);
+	--sidebar-primary-foreground: var(--primary-foreground);
+	--sidebar-accent: var(--card);
+	--sidebar-accent-foreground: var(--foreground);
+	--sidebar-border: var(--border);
+	--sidebar-ring: var(--ring);
+
+	--positive: oklch(0.55 0.17 145);
+	--negative: oklch(0.55 0.20 25);
+	--neutral: oklch(0.55 0.06 260);
+
+	--header-height: 70px;
+	--announcement-height: 0;
+}
+
+.dark {
+	--background: oklch(0.185 0.008 265);
+	--foreground: oklch(0.945 0.004 265);
+	--card: oklch(0.225 0.010 265);
+	--card-foreground: oklch(0.945 0.004 265);
+	--popover: oklch(0.225 0.010 265);
+	--popover-foreground: oklch(0.945 0.004 265);
+	--primary: oklch(0.945 0.004 265);
+	--primary-hover: oklch(0.85 0.006 265);
+	--primary-foreground: oklch(0.185 0.008 265);
+	--secondary: oklch(0.29 0.010 265);
+	--secondary-foreground: oklch(0.945 0.004 265);
+	--muted: oklch(0.27 0.010 265);
+	--muted-foreground: oklch(0.76 0.010 265);
+	--accent: oklch(0.27 0.010 265);
+	--accent-foreground: oklch(0.945 0.004 265);
+	--destructive: oklch(0.834 0.068 22);
+	--destructive-foreground: oklch(0.834 0.068 22);
+	--border: oklch(0.29 0.010 265);
+	--border-strong: oklch(0.39 0.012 265);
+	--input: oklch(0.55 0.012 265);
+	--ring: oklch(0.945 0.004 265);
+	--surface-soft: oklch(0.205 0.009 265);
+	--field: oklch(0.27 0.010 265);
+	--volt: oklch(0.946 0.153 118);
+	--volt-tint: oklch(0.32 0.05 118);
+	--create: var(--volt);
+	--create-hover: color-mix(in oklch, var(--volt) 85%, transparent);
+	--create-foreground: var(--volt-foreground);
+	--create-icon: var(--volt-foreground);
+	--status-scheduled: oklch(0.36 0.04 304.8);
+	--status-open: oklch(0.36 0.05 145.4);
+	--status-closing: oklch(0.36 0.05 52.7);
+	--status-ended: oklch(0.36 0.05 86.1);
+	--chart-1: oklch(0.488 0.243 264.376);
+	--chart-2: oklch(0.696 0.17 162.48);
+	--chart-3: oklch(0.769 0.188 70.08);
+	--chart-4: oklch(0.627 0.265 303.9);
+	--chart-5: oklch(0.645 0.246 16.439);
+	--sidebar: oklch(0.165 0.008 265);
+	--sidebar-foreground: var(--foreground);
+	--sidebar-primary: var(--primary);
+	--sidebar-primary-foreground: var(--primary-foreground);
+	--sidebar-accent: var(--card);
+	--sidebar-accent-foreground: var(--foreground);
+	--sidebar-border: var(--border);
+	--sidebar-ring: var(--ring);
+
+	--positive: oklch(0.65 0.17 145);
+	--negative: oklch(0.62 0.20 25);
+	--neutral: oklch(0.45 0.04 260);
+}
+
+@theme inline {
+
+	--font-sans: var(--font-geist-sans), 'PingFang TC', 'Microsoft JhengHei', 'Noto Sans TC', system-ui, sans-serif;
+	--font-mono: var(--font-geist-mono), ui-monospace, Menlo, monospace;
+	--font-family-monospace: Menlo, Monaco, Consolas, Courier New, monospace;
+	--font-family-default: Helvetica, Arial, sans-serif;
+	--font-family-serif: ui-serif, New York Small, New York, Georgia, Times New Roman, Times, serif;
+	--font-chinese-traditional: PingFang TC, Microsoft JhengHei;
+
+	--color-sidebar-ring: var(--sidebar-ring);
+	--color-sidebar-border: var(--sidebar-border);
+	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+	--color-sidebar-accent: var(--sidebar-accent);
+	--color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+	--color-sidebar-primary: var(--sidebar-primary);
+	--color-sidebar-foreground: var(--sidebar-foreground);
+	--color-sidebar: var(--sidebar);
+	--color-chart-5: var(--chart-5);
+	--color-chart-4: var(--chart-4);
+	--color-chart-3: var(--chart-3);
+	--color-chart-2: var(--chart-2);
+	--color-chart-1: var(--chart-1);
+	--color-ring: var(--ring);
+	--color-input: var(--input);
+	--color-border: var(--border);
+	--color-destructive: var(--destructive);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-muted: var(--muted);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-secondary: var(--secondary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-primary: var(--primary);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-popover: var(--popover);
+	--color-card-foreground: var(--card-foreground);
+	--color-card: var(--card);
+	--color-foreground: var(--foreground);
+	--color-background: var(--background);
+	--color-primary-hover: var(--primary-hover);
+	--color-border-strong: var(--border-strong);
+	--color-surface-soft: var(--surface-soft);
+	--color-field: var(--field);
+	--color-volt: var(--volt);
+	--color-volt-foreground: var(--volt-foreground);
+	--color-volt-tint: var(--volt-tint);
+	--color-create: var(--create);
+	--color-create-hover: var(--create-hover);
+	--color-create-foreground: var(--create-foreground);
+	--color-create-icon: var(--create-icon);
+	--color-status-scheduled: var(--status-scheduled);
+	--color-status-open: var(--status-open);
+	--color-status-closing: var(--status-closing);
+	--color-status-ended: var(--status-ended);
+	--color-avatar-sand: var(--avatar-sand);
+	--color-avatar-stone: var(--avatar-stone);
+	--color-avatar-green: var(--avatar-green);
+	--color-avatar-sky: var(--avatar-sky);
+	--color-avatar-peach: var(--avatar-peach);
+	--color-avatar-lavender: var(--avatar-lavender);
+	--color-positive: var(--positive);
+	--color-negative: var(--negative);
+	--color-neutral: var(--neutral);
+
+	--spacing-contain: max(1vw, 16px);
+	--spacing-header: var(--header-height);
+	/* The home feed column; the feed and its loading skeleton share it */
+	--container-feed: 640px;
+	--z-index-header: 48;
+	--z-index-overlay: 49;
+	--z-index-dialog: 50;
+	--z-index-popover: 50;
+}
+
+
+@layer base {
+	* {
+		@apply border-border outline-ring/50;
+	}
+
+	/* Content doesn't jump sideways when a page grows past the viewport */
+	html {
+		scrollbar-gutter: stable;
+	}
+
+	body {
+		@apply bg-background text-foreground;
+	}
+
+	*,
+	::after,
+	::before,
+	::backdrop,
+	::file-selector-button {
+		border-color: var(--color-gray, currentcolor);
+	}
+}
+
+/* Position */
+
+@utility pt-header-space-* {
+	padding-top: calc(var(--header-height) + var(--announcement-height, 0) + --value(number) * var(--spacing));
+	padding-top: calc(var(--header-height) + var(--announcement-height, 0) + --value([*]));
+}
+
+@utility mt-header-space-* {
+	margin-top: calc(var(--header-height) + var(--announcement-height, 0) + --value(number) * var(--spacing));
+	margin-top: calc(var(--header-height) + var(--announcement-height, 0) + --value([*]));
+}
+
+@utility top-header-space-* {
+	top: calc(var(--header-height) + var(--announcement-height, 0) + --value(number) * var(--spacing));
+	top: calc(var(--header-height) + var(--announcement-height, 0) + --value([*]));
+}
+
+@utility p-fill {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+}
+
+@utility p-center {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate3d(-50%, -50%, 0);
+}
+
+@utility no-text-space {
+	font-size: 0;
+	line-height: 0;
+}
+
+/* The redesign's display type: Geist 400, tight tracking */
+@utility display-heading {
+	font-weight: 400;
+	line-height: 1.25;
+	letter-spacing: -0.03em;
+}
+
+/* Titles in list rows and side cards; weight and leading go beside it */
+@utility item-title {
+	font-size: 17px;
+	letter-spacing: -0.01em;
+}
+
+@utility empty-state {
+	@apply rounded-xl border border-dashed border-border-strong bg-surface-soft px-5 py-8 text-[15px] text-muted-foreground;
+}
+
+@layer utilities {
+
+	/* Chrome, Safari and Opera */
+	.no-scrollbar::-webkit-scrollbar {
+		display: none;
+	}
+
+	/* IE and Edge */
+	.no-scrollbar {
+		-ms-overflow-style: none;
+	}
+
+	/* Firefox */
+	.no-scrollbar {
+		scrollbar-width: none;
+	}
+
+
+	/* Other */
+	.increase-target-size {
+		--target-size: 5px;
+		position: relative;
+	}
+
+	.increase-target-size::before {
+		content: '';
+		display: block;
+		position: absolute;
+		width: calc(100% + var(--target-size) * 2);
+		height: calc(100% + var(--target-size) * 2);
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+	}
+
+	.custom-touch-manipulation {
+		@media (hover: none) and (pointer: coarse) {
+			touch-action: manipulation;
+		}
+	}
+}
