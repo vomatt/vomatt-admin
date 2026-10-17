@@ -21,6 +21,17 @@ Staff-only Next.js 16 App Router app, separate from the public site `vomatt-web`
 - `src/app/(admin)/` — admin views on vomatt-api `/api/admin/**`; its own root layout.
 - `src/app/(sanity)/` — Sanity Studio at `/sanity` (`sanity.config.ts`, schemas in `src/sanity/schemaTypes/`); its own root layout so admin CSS stays out of the Studio.
 
+## API contract (vomatt-api)
+
+The contract is `../vomatt-api/docs/frontend/openapi.json` (generated, ~340 KB). Read only the admin part: paths under `/api/admin/**` (tags `Admin - Lookup`, `Admin Tag`) plus the `components/schemas` they `$ref`. Don't read the whole file or the public endpoints. Extract it with jq:
+
+```bash
+jq '.paths | with_entries(select(.key | startswith("/api/admin")))' ../vomatt-api/docs/frontend/openapi.json
+jq '.components.schemas.<Name>' ../vomatt-api/docs/frontend/openapi.json   # resolve a $ref
+```
+
+Shared conventions (auth, errors) are in `../vomatt-api/docs/frontend/` (`conventions.md`, `auth-flow.md`, `error-codes.md`).
+
 ## Code copied from vomatt-web
 
 Same stack and conventions as vomatt-web (Tailwind v4, shadcn/ui new-york/zinc, Geist, OKLCh tokens). Files copied from it start with a `Mirrors vomatt-web <path>; change both` comment: when you change one, change the other. Today: `src/styles/global.css`, `src/sanity/lib/site.ts`, `src/sanity/lib/socialIcons.tsx`, and the Studio (`sanity.config.ts`, `src/sanity/`) until vomatt-web drops its copy in Stage 5.
