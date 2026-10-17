@@ -64,6 +64,8 @@ jobs:
           # The job's own token (contents + pull-requests write), so the
           # Claude GitHub App doesn't need to be installed on this repo
           github_token: ${{ github.token }}
+          # Log Claude's messages so a failed run shows its error (repo is private)
+          show_full_output: true
           claude_args: --max-turns 200
           prompt: |
             vomatt-api changed its API contract. The new contract is ../vomatt-api/docs/frontend/openapi.json
