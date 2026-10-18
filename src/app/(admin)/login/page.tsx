@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 
+import { BrandLogo } from '@/components/BrandLogo';
 import { LoginForm } from '@/components/LoginForm';
 import { SessionEndReason } from '@/lib/login';
 import { getSafeRedirectPath } from '@/lib/routes';
@@ -20,7 +21,10 @@ export default async function LoginPage({ searchParams }: PageProps<'/login'>) {
 
 	return (
 		<main className="flex min-h-dvh flex-col items-center justify-center gap-6 p-8">
-			<h1 className="display-heading text-2xl">Vomatt Admin</h1>
+			<h1 className="w-32 text-foreground">
+				<BrandLogo />
+				<span className="sr-only">Vomatt Admin</span>
+			</h1>
 			<LoginForm redirectTo={getSafeRedirectPath(redirect)} notice={reason ? NOTICES[reason] : undefined} />
 		</main>
 	);
