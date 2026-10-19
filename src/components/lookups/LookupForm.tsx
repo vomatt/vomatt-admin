@@ -2,7 +2,11 @@
 
 import { type FormEvent, useState, useTransition } from 'react';
 
-import { buttonClass, errorClass, inputClass } from '@/components/ui/styles';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { createLookup, updateLookup } from '@/lib/api/services/lookups';
 import { Lookup, LookupInput } from '@/types';
 
@@ -60,16 +64,10 @@ export function LookupForm({
 	}
 
 	const field = (name: keyof LookupInput, label: string, value?: string | null, required = false) => (
-		<label className="flex flex-col gap-1 text-sm">
+		<Label className="flex-col items-stretch gap-1.5">
 			{label}
-			<input
-				name={name}
-				required={required}
-				maxLength={50}
-				defaultValue={value ?? ''}
-				className={inputClass}
-			/>
-		</label>
+			<Input name={name} required={required} maxLength={50} defaultValue={value ?? ''} />
+		</Label>
 	);
 
 	return (
@@ -78,43 +76,38 @@ export function LookupForm({
 			{field('lookupKey', 'Key', lookup?.lookupKey, true)}
 			{field('parentType', 'Parent type', lookup?.parentType)}
 			{field('parentKey', 'Parent key', lookup?.parentKey)}
-			<label className="flex flex-col gap-1 text-sm sm:col-span-2">
+			<Label className="flex-col items-stretch gap-1.5 sm:col-span-2">
 				Value (JSON)
-				<textarea
+				<Textarea
 					name="lookupValue"
 					required
 					rows={3}
 					defaultValue={lookup ? JSON.stringify(lookup.lookupValue, null, 2) : ''}
-					className={`${inputClass} h-auto py-2 font-mono`}
+					className="font-mono"
 				/>
-			</label>
-			<label className="flex flex-col gap-1 text-sm sm:col-span-2">
+			</Label>
+			<Label className="flex-col items-stretch gap-1.5 sm:col-span-2">
 				Description
-				<input
-					name="description"
-					maxLength={100}
-					defaultValue={lookup?.description ?? ''}
-					className={inputClass}
-				/>
-			</label>
-			<label className="flex flex-col gap-1 text-sm">
+				<Input name="description" maxLength={100} defaultValue={lookup?.description ?? ''} />
+			</Label>
+			<Label className="flex-col items-stretch gap-1.5">
 				Order
-				<input name="seq" type="number" step={1} defaultValue={lookup?.seq ?? 0} className={inputClass} />
-			</label>
-			<label className="flex items-center gap-2 self-end pb-2 text-sm">
-				<input name="frontendUsing" type="checkbox" defaultChecked={lookup?.frontendUsing} />
+				<Input name="seq" type="number" step={1} defaultValue={lookup?.seq ?? 0} />
+			</Label>
+			<Label className="self-end pb-2">
+				<Checkbox name="frontendUsing" defaultChecked={lookup?.frontendUsing} />
 				In frontend dictionary
-			</label>
-			<button type="submit" disabled={pending} className={`${buttonClass} self-end sm:col-start-4`}>
+			</Label>
+			<Button type="submit" disabled={pending} className="self-end sm:col-start-4">
 				{lookup ? 'Save' : 'Add item'}
-			</button>
+			</Button>
 			{lookup ? (
 				<p className="text-sm text-muted-foreground sm:col-span-4">
 					Emptied optional fields keep their current value: the API can&apos;t clear them.
 				</p>
 			) : null}
 			{error ? (
-				<p role="alert" className={`${errorClass} sm:col-span-4`}>
+				<p role="alert" className="text-sm text-destructive sm:col-span-4">
 					{error}
 				</p>
 			) : null}

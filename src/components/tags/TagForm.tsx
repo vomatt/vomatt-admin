@@ -2,7 +2,9 @@
 
 import { type FormEvent, useState, useTransition } from 'react';
 
-import { buttonClass, errorClass, inputClass } from '@/components/ui/styles';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { createTag, updateTag } from '@/lib/api/services/tags';
 import { Tag, TagInput } from '@/types';
 
@@ -37,44 +39,27 @@ export function TagForm({ tag, onDone }: { tag?: Tag; onDone?: () => void }) {
 
 	return (
 		<form onSubmit={handleSubmit} className="grid gap-3 sm:grid-cols-[1fr_1fr_2fr_6rem_auto] sm:items-end">
-			<label className="flex flex-col gap-1 text-sm">
+			<Label className="flex-col items-stretch gap-1.5">
 				Name
-				<input name="name" required maxLength={30} defaultValue={tag?.name} className={inputClass} />
-			</label>
-			<label className="flex flex-col gap-1 text-sm">
+				<Input name="name" required maxLength={30} defaultValue={tag?.name} />
+			</Label>
+			<Label className="flex-col items-stretch gap-1.5">
 				Slug
-				<input
-					name="slug"
-					maxLength={50}
-					placeholder="From the name"
-					defaultValue={tag?.slug}
-					className={inputClass}
-				/>
-			</label>
-			<label className="flex flex-col gap-1 text-sm">
+				<Input name="slug" maxLength={50} placeholder="From the name" defaultValue={tag?.slug} />
+			</Label>
+			<Label className="flex-col items-stretch gap-1.5">
 				Description
-				<input
-					name="description"
-					maxLength={200}
-					defaultValue={tag?.description ?? ''}
-					className={inputClass}
-				/>
-			</label>
-			<label className="flex flex-col gap-1 text-sm">
+				<Input name="description" maxLength={200} defaultValue={tag?.description ?? ''} />
+			</Label>
+			<Label className="flex-col items-stretch gap-1.5">
 				Order
-				<input
-					name="displayOrder"
-					type="number"
-					step={1}
-					defaultValue={tag?.displayOrder ?? 0}
-					className={inputClass}
-				/>
-			</label>
-			<button type="submit" disabled={pending} className={buttonClass}>
+				<Input name="displayOrder" type="number" step={1} defaultValue={tag?.displayOrder ?? 0} />
+			</Label>
+			<Button type="submit" disabled={pending}>
 				{tag ? 'Save' : 'Add tag'}
-			</button>
+			</Button>
 			{error ? (
-				<p role="alert" className={`${errorClass} sm:col-span-5`}>
+				<p role="alert" className="text-sm text-destructive sm:col-span-5">
 					{error}
 				</p>
 			) : null}

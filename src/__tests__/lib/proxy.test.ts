@@ -10,8 +10,8 @@ process.env.API_URL = 'https://api.example.test';
 
 const { proxy } = require('@/proxy') as typeof import('@/proxy');
 
-function signToken({ roles = ['user', 'admin'], expiresIn = '15m', secret = SECRET } = {}) {
-	return new SignJWT({ sub: 'user-1', roles })
+function signToken({ roles = ['user', 'admin'], scope = 'admin', expiresIn = '15m', secret = SECRET } = {}) {
+	return new SignJWT({ sub: 'user-1', roles, scope })
 		.setProtectedHeader({ alg: 'HS512' })
 		.setExpirationTime(expiresIn)
 		.sign(new TextEncoder().encode(secret));
@@ -65,6 +65,14 @@ describe('proxy', () => {
 			'http://localhost:3003/login?redirect=%2Ftags&session_expired=forbidden'
 		);
 		expect(res.cookies.get('accessToken')?.value).toBe('');
+	});
+
+	it('signs out an admin token from the consumer sign-in', async () => {
+		const res = await proxy(requestFor('/tags', { accessToken: await signToken({ scope: 'user' }) }));
+
+		expect(res.headers.get('location')).toBe(
+			'http://localhost:3003/login?redirect=%2Ftags&session_expired=forbidden'
+		);
 	});
 
 	it('signs out when a refresh returns a token without the admin role', async () => {
