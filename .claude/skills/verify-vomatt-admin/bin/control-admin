@@ -1,0 +1,125 @@
+#!/usr/bin/env bash
+# Starts, checks and tears down a throwaway vomatt-admin + vomatt-api stack for
+# verification. Usage: control-admin up|doctor|otp <email>|otp-reset <email>|sql <query>|down
+set -euo pipefail
+
+SKILL_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+REPO="$(git -C "$SKILL_DIR" rev-parse --show-toplevel)"
+# The main checkout's parent holds the sibling repos, also from a worktree
+MAIN="$(dirname "$(cd "$REPO" && cd "$(git rev-parse --git-common-dir)" && pwd)")"
+API_DIR="${VOMATT_API_DIR:-$(dirname "$MAIN")/vomatt-api}"
+
+PROJECT=vomatt-admin-verify
+ADMIN_PORT=3033
+API_URL=http://localhost:18080
+ROOT=/private/tmp/vomatt-admin-verify # browse may only write under /private/tmp or the repo
+STATE="$ROOT/state"
+EVIDENCE_ROOT="$ROOT/evidence"
+BROWSE="$HOME/.claude/skills/gstack/browse/dist/browse"
+ADMIN_EMAIL=verify-admin@vomatt.test
+USER_EMAIL=verify-user@vomatt.test
+
+compose() { docker compose -p "$PROJECT" -f "$API_DIR/docker-compose.yml" -f "$SKILL_DIR/compose.verify.yml" "$@"; }
+psql_exec() { compose exec -T postgres psql -U postgres -v ON_ERROR_STOP=1 -At -c "$1"; }
+die() { echo "control-admin: $*" >&2; exit 1; }
+owned_by() { # <ancestor pid> <pid>: true when pid descends from ancestor
+	local p=$2
+	while [ -n "$p" ] && [ "$p" -gt 1 ]; do [ "$p" = "$1" ] && return 0; p="$(ps -o ppid= -p "$p" | tr -d ' ')"; done
+	return 1
+}
+port_busy() { lsof -iTCP:"$1" -sTCP:LISTEN -t >/dev/null 2>&1; }
+
+wait_for() { # <seconds> <description> <command...>
+	local limit=$1 what=$2; shift 2
+	for _ in $(seq "$limit"); do "$@" >/dev/null 2>&1 && return 0; sleep 1; done
+	die "timed out after ${limit}s waiting for $what"
+}
+
+cmd_up() {
+	[ -d "$API_DIR" ] || die "vomatt-api not found at $API_DIR (set VOMATT_API_DIR)"
+	docker info >/dev/null 2>&1 || die "Docker is not running"
+	[ -f "$STATE/next.pid" ] && kill -0 "$(cat "$STATE/next.pid")" 2>/dev/null && die "already up; run doctor, or down first"
+	for p in $ADMIN_PORT 18080 15432 16379; do
+		port_busy "$p" && ! compose ps -q 2>/dev/null | grep -q . && die "port $p is taken by something this script did not start"
+	done
+	mkdir -p "$STATE"
+
+	# Builds the API image from the vomatt-api checkout on first run (a few minutes)
+	compose up -d --wait $( [ "${REBUILD:-}" = 1 ] && echo --build )
+	wait_for 120 "API health" curl -fsS "$API_URL/actuator/health"
+
+	# OTP sign-in with checkRole only works for accounts that already exist
+	psql_exec "INSERT INTO vomatt.users (id, username, email, roles, auth_method) VALUES
+		(gen_random_uuid(), 'verify_admin', '$ADMIN_EMAIL', ARRAY['user','admin'], 'email_otp'),
+		(gen_random_uuid(), 'verify_user', '$USER_EMAIL', ARRAY['user'], 'email_otp')
+		ON CONFLICT (email) DO NOTHING" >/dev/null
+
+	# next dev writes AGENTS.md into the checkout; down removes it only if this run created it
+	[ -e "$REPO/AGENTS.md" ] || touch "$STATE/created-agents-md"
+	# gstack browse appends `.gstack/` to .gitignore on first use; down takes it back out
+	grep -qx '.gstack/' "$REPO/.gitignore" || touch "$STATE/gitignore-without-gstack"
+	[ -x "$REPO/node_modules/.bin/next" ] || (cd "$REPO" && npm ci --no-audit --no-fund >/dev/null)
+	local secret
+	secret="$(sed -n 's/^ *JWT_SECRET: *//p' "$API_DIR/docker-compose.yml")"
+	# Only next dev goes to the background, with every stream off the caller's pipe
+	cd "$REPO"
+	API_URL="$API_URL" SESSION_SECRET="$secret" NEXT_PUBLIC_SITE_URL=http://localhost:3002 \
+		nohup node_modules/.bin/next dev --port=$ADMIN_PORT </dev/null >"$STATE/next.log" 2>&1 &
+	echo $! >"$STATE/next.pid"
+	wait_for 120 "admin /login" curl -fsS "http://localhost:$ADMIN_PORT/login" ||
+		{ tail -20 "$STATE/next.log"; exit 1; }
+
+	local run="${RUN_ID:-$(date +%Y%m%d-%H%M%S)}"
+	mkdir -p "$EVIDENCE_ROOT/$run"
+	echo "$run" >"$STATE/run"
+	echo "up: admin http://localhost:$ADMIN_PORT, API $API_URL"
+	echo "evidence: $EVIDENCE_ROOT/$run"
+}
+
+cmd_doctor() {
+	local ok=1 pid
+	check() { if eval "$2" >/dev/null 2>&1; then echo "ok   $1"; else echo "FAIL $1"; ok=0; fi; }
+	pid="$(cat "$STATE/next.pid" 2>/dev/null || true)"
+	check "next dev started by us (pid ${pid:-none})" "[ -n '$pid' ] && kill -0 '$pid'"
+	check "port $ADMIN_PORT owned by our next dev" "owned_by '$pid' \"\$(lsof -iTCP:$ADMIN_PORT -sTCP:LISTEN -t | head -1)\""
+	check "admin /login renders the sign-in form" "curl -fsS http://localhost:$ADMIN_PORT/login | grep -q 'Send code'"
+	check "API health UP at $API_URL" "curl -fsS $API_URL/actuator/health | grep -q UP"
+	check "admin account seeded" "[ \"\$(psql_exec \"SELECT roles FROM vomatt.users WHERE email='$ADMIN_EMAIL'\")\" = '{user,admin}' ]"
+	echo "info build: $(git -C "$REPO" rev-parse --short HEAD)$(git -C "$REPO" diff --quiet || echo ' +uncommitted')"
+	echo "info evidence: $EVIDENCE_ROOT/$(cat "$STATE/run" 2>/dev/null || echo '<no run>')"
+	[ $ok = 1 ]
+}
+
+cmd_otp() { # Prints the 6-digit code the API stored for <email>; emails are never sent locally
+	[ -n "${1:-}" ] || die "usage: otp <email>"
+	compose exec -T redis redis-cli GET "otp:email:$1" | grep -oE '[0-9]{6}' | head -1 || die "no OTP stored for $1"
+}
+
+cmd_otp_reset() { # Clears the 180 s resend cooldown and any pending code, in this stack's Redis only
+	[ -n "${1:-}" ] || die "usage: otp-reset <email>"
+	compose exec -T redis redis-cli DEL "otp:email:$1" "otp:email:cooldown:$1" >/dev/null
+}
+
+cmd_down() { # Removes what up started; keeps the evidence
+	if [ -f "$STATE/next.pid" ]; then
+		local pid; pid="$(cat "$STATE/next.pid")"
+		pkill -TERM -P "$pid" 2>/dev/null || true
+		kill "$pid" 2>/dev/null || true
+	fi
+	compose down -v --remove-orphans
+	"$BROWSE" stop >/dev/null 2>&1 || true
+	[ -f "$STATE/created-agents-md" ] && rm -f "$REPO/AGENTS.md"
+	[ -f "$STATE/gitignore-without-gstack" ] && sed -i '' '/^\.gstack\/$/d' "$REPO/.gitignore" && rm -rf "$REPO/.gstack"
+	rm -rf "$STATE"
+	echo "down; evidence kept in $EVIDENCE_ROOT"
+}
+
+case "${1:-}" in
+	up) cmd_up ;;
+	doctor) cmd_doctor ;;
+	otp) cmd_otp "${2:-}" ;;
+	otp-reset) cmd_otp_reset "${2:-}" ;;
+	sql) psql_exec "${2:?usage: sql <query>}" ;;
+	down) cmd_down ;;
+	*) die "usage: control-admin up|doctor|otp <email>|otp-reset <email>|sql <query>|down" ;;
+esac

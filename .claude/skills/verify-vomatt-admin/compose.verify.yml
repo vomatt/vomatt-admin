@@ -1,0 +1,14 @@
+# Layered on ../vomatt-api/docker-compose.yml by bin/control-admin, under the
+# compose project `vomatt-admin-verify`. Moves every port off the defaults so the
+# stack never collides with a developer's own API (8080) or other verify stacks.
+services:
+  postgres:
+    ports: !override
+      - "15432:5432"
+  redis:
+    ports: !override
+      - "16379:6379"
+  api:
+    image: vomatt-admin-verify-api
+    ports: !override
+      - "18080:8080"
