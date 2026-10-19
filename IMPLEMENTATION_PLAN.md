@@ -10,8 +10,8 @@ Separate repo (decided). vomatt-web keeps reading Sanity content (`next-sanity`,
 ## Decisions
 
 - **Same stack as vomatt-web**: Next 16 App Router, TypeScript, Tailwind v4, shadcn/ui (new-york, zinc), Jest (jsdom), ESLint (next/core-web-vitals + simple-import-sort). Copy the configs; don't introduce new tools.
-- **Auth mirrors vomatt-web**: tokens in httpOnly cookies; refresh **only** in `src/proxy.tsx` (the backend revokes every session when a used refresh token comes back). Login uses OTP with `checkRole: "true"`.
-- **Admin check is the `roles` claim**: the proxy lets a request through only when the access token's `roles` includes `admin`. `checkRole` only guards the login step, and a role change takes effect at the next refresh.
+- **Auth mirrors vomatt-web**: tokens in httpOnly cookies; refresh **only** in `src/proxy.tsx` (the backend revokes every session when a used refresh token comes back). Login uses the admin console OTP endpoints (`/api/auth/admin/send-otp`, `/api/auth/admin/verify-otp`); only their tokens carry `scope: "admin"`, which `/api/admin/**` requires.
+- **Admin check is the `scope` and `roles` claims**: the proxy lets a request through only when the access token has `scope: "admin"` and `roles` includes `admin`. A consumer sign-in by an admin still lists `admin` in `roles` but has `scope: "user"`, so it's signed out. A role change takes effect at the next refresh.
 - **`/sanity` sits behind the admin login too**. Sanity still asks for its own login on top. Only the login page is reachable without a session.
 - **Copied code names its source**: each file copied from vomatt-web starts with `// Mirrors vomatt-web <path>; change both`. That's the price of separate repos.
 
@@ -49,10 +49,20 @@ Separate repo (decided). vomatt-web keeps reading Sanity content (`next-sanity`,
 **Goal**: prove the pattern end to end on `/api/admin/tags`: list, create, edit.
 **Success Criteria**: an admin can list, create and edit a tag; API errors (`errorCode`) show as messages; a 403 sends the user back to login.
 **Tests**: service functions return `ActionResult` for success/error; the list renders items and an empty state.
-**Status**: Complete in code, plus lookups (create, edit, activate/deactivate, delete). Lists come from public `GET /api/tags` and `GET /api/lookups/{type}`: the admin API has no list endpoints, so inactive lookups are found by type + key only. Not checked against a live admin session.
+**Status**: Complete in code, plus lookups (create, edit, activate/deactivate, delete). Tags list from public `GET /api/tags` (no admin list); lookups now list from `GET /api/admin/lookups` (Stage 4b). Not checked against a live admin session.
 
 - Admin layout: sidebar with "Tags", "Lookups" (Stage 4+), and a "Content (Sanity)" link to `/sanity`.
 - Lookups and other views follow the same pattern after this stage; they're outside this plan.
+
+## Stage 4b: Back-office views on the expanded admin API
+**Goal**: cover every `/api/admin/**` endpoint in the updated contract (`api-doc.json`) with shadcn/ui views.
+**Success Criteria**: an admin can see the stats overview; list/filter users, change roles, suspend and unsuspend; list/filter polls, close, delete and restore; list/filter comments and delete them; browse the audit log; lookups list from `GET /api/admin/lookups` (inactive included). A domain 403 (`admin.self_action_forbidden`) shows as an error instead of signing the admin out.
+**Tests**: service calls (method, path, body), the domain-403 vs session-403 split, query/page helpers, `ConfirmAction`, `Pagination`, `RolesForm`, the overview page.
+**Status**: Complete in code (build, lint, tsc, tests pass). Not checked against a live admin session.
+
+- shadcn/ui (new-york, radix) components live in `src/components/ui/` with `cn` in `src/lib/utils.ts`; they replace the old `ui/styles.ts` classes.
+- Times show in Asia/Taipei (`src/lib/format.ts`); the audit-log date filters read as Taipei time too.
+- Tags still list from public `GET /api/tags`: the admin API has no tag list.
 
 ## Stage 5: Remove the Studio from vomatt-web
 **Goal**: vomatt-web ships no Studio code; `/sanity` redirects to the admin app.

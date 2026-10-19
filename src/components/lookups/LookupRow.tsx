@@ -2,9 +2,10 @@
 
 import { useState, useTransition } from 'react';
 
+import { ConfirmAction } from '@/components/admin/ConfirmAction';
 import { LookupForm } from '@/components/lookups/LookupForm';
-import { errorClass, secondaryButtonClass } from '@/components/ui/styles';
-import { ActionResult } from '@/lib/api/action';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { deleteLookup, setLookupActive } from '@/lib/api/services/lookups';
 import { Lookup } from '@/types';
 
@@ -13,28 +14,21 @@ export function LookupRow({ lookup }: { lookup: Lookup }) {
 	const [error, setError] = useState<string | null>(null);
 	const [pending, startTransition] = useTransition();
 
-	function run(action: () => Promise<ActionResult<void>>) {
+	function toggleActive() {
 		setError(null);
 		startTransition(async () => {
-			const result = await action();
+			const result = await setLookupActive(lookup.id, !lookup.isActive);
 			if (!result.ok) setError(result.message);
 		});
-	}
-
-	function handleDelete() {
-		if (!confirm(`Delete ${lookup.lookupType}/${lookup.lookupKey}? Deactivate it instead if it may come back.`)) {
-			return;
-		}
-		run(() => deleteLookup(lookup.id));
 	}
 
 	if (editing) {
 		return (
 			<li className="flex flex-col gap-2 p-3">
 				<LookupForm lookup={lookup} onDone={() => setEditing(false)} />
-				<button type="button" onClick={() => setEditing(false)} className="self-start text-sm underline">
+				<Button variant="link" size="sm" onClick={() => setEditing(false)} className="self-start px-0">
 					Cancel
-				</button>
+				</Button>
 			</li>
 		);
 	}
@@ -43,14 +37,12 @@ export function LookupRow({ lookup }: { lookup: Lookup }) {
 		<li className="flex flex-wrap items-center gap-x-4 gap-y-1 p-3">
 			<span className="w-10 text-sm text-muted-foreground tabular-nums">{lookup.seq}</span>
 			<div className="min-w-0 flex-1">
-				<p className="font-medium">
+				<p className="flex items-center gap-2 font-medium">
 					<span className="font-mono">{lookup.lookupKey}</span>
-					{lookup.isActive ? null : <span className="ml-2 text-xs text-muted-foreground">inactive</span>}
-					{lookup.frontendUsing ? <span className="ml-2 text-xs text-muted-foreground">frontend</span> : null}
+					{lookup.isActive ? null : <Badge variant="outline">inactive</Badge>}
+					{lookup.frontendUsing ? <Badge variant="secondary">frontend</Badge> : null}
 				</p>
-				<p className="truncate font-mono text-xs text-muted-foreground">
-					{JSON.stringify(lookup.lookupValue)}
-				</p>
+				<p className="truncate font-mono text-xs text-muted-foreground">{JSON.stringify(lookup.lookupValue)}</p>
 				{lookup.description ? <p className="text-sm text-muted-foreground">{lookup.description}</p> : null}
 				{lookup.parentType ? (
 					<p className="text-xs text-muted-foreground">
@@ -58,22 +50,21 @@ export function LookupRow({ lookup }: { lookup: Lookup }) {
 					</p>
 				) : null}
 			</div>
-			<button type="button" onClick={() => setEditing(true)} className={secondaryButtonClass}>
+			<Button variant="outline" size="sm" onClick={() => setEditing(true)}>
 				Edit
-			</button>
-			<button
-				type="button"
-				onClick={() => run(() => setLookupActive(lookup.id, !lookup.isActive))}
-				disabled={pending}
-				className={secondaryButtonClass}
-			>
+			</Button>
+			<Button variant="outline" size="sm" onClick={toggleActive} disabled={pending}>
 				{lookup.isActive ? 'Deactivate' : 'Activate'}
-			</button>
-			<button type="button" onClick={handleDelete} disabled={pending} className={secondaryButtonClass}>
-				Delete
-			</button>
+			</Button>
+			<ConfirmAction
+				action={() => deleteLookup(lookup.id)}
+				label="Delete"
+				title={`Delete ${lookup.lookupType}/${lookup.lookupKey}?`}
+				description="This can't be undone. Deactivate it instead if it may come back."
+				destructive
+			/>
 			{error ? (
-				<p role="alert" className={`${errorClass} basis-full`}>
+				<p role="alert" className="basis-full text-sm text-destructive">
 					{error}
 				</p>
 			) : null}

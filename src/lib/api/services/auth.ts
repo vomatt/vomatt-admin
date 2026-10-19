@@ -1,8 +1,9 @@
 'use server';
 
 // Mirrors vomatt-web src/lib/api/services/auth.ts; change both. Admin
-// differences: `checkRole` restricts both steps to admin accounts, there is
-// no check-email step (no signup here), and errors are English messages.
+// differences: sign-in uses the admin console endpoints (only their tokens
+// carry the admin scope), there is no check-email step (no signup here), and
+// errors are English messages.
 
 import { redirect } from 'next/navigation';
 
@@ -33,7 +34,7 @@ function postJson(endpoint: string, body: unknown) {
 /** Emails a one-time code; the API refuses accounts without the admin role. */
 export async function requestOtp(email: string): Promise<AuthResult> {
 	try {
-		await postJson('/auth/send-otp', { email: email.trim().toLowerCase(), checkRole: 'true' });
+		await postJson('/auth/admin/send-otp', { email: email.trim().toLowerCase() });
 		return { ok: true };
 	} catch (error) {
 		return toFailure(error);
@@ -43,10 +44,9 @@ export async function requestOtp(email: string): Promise<AuthResult> {
 /** Verifies the code and starts the session. */
 export async function verifyOtp(email: string, code: string): Promise<AuthResult> {
 	try {
-		const data = await postJson('/auth/verify-otp', {
+		const data = await postJson('/auth/admin/verify-otp', {
 			email: email.trim().toLowerCase(),
 			code: code.trim(),
-			checkRole: 'true',
 		});
 		const tokens = readAuthTokens(data);
 		if (!tokens) return toFailure(null);

@@ -20,6 +20,8 @@ import { AuthTokens } from '@/types';
 export interface AccessTokenPayload extends JWTPayload {
 	email?: string;
 	roles?: string[];
+	/** `admin` only for tokens from the admin console login. */
+	scope?: string;
 }
 
 const encodedKey = new TextEncoder().encode(process.env.SESSION_SECRET);
@@ -41,9 +43,13 @@ export async function verifyAccessToken(
 	}
 }
 
-/** Admin-only (not in vomatt-web): the backend issues roles lower-cased, e.g. `["user", "admin"]`. */
+/**
+ * Admin-only (not in vomatt-web): roles are lower-cased, e.g. `["user", "admin"]`.
+ * The API also needs the admin `scope`: a consumer sign-in still lists `admin`
+ * in `roles` but gets 403 on `/api/admin/**`.
+ */
 export function isAdmin(payload: AccessTokenPayload) {
-	return payload.roles?.includes('admin') ?? false;
+	return payload.scope === 'admin' && (payload.roles?.includes('admin') ?? false);
 }
 
 /** True when the payload expires within the refresh leeway. */

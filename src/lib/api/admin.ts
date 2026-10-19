@@ -39,3 +39,13 @@ export async function adminMutation<T>(
 	if (result.ok) refresh();
 	return result;
 }
+
+/** Appends the non-empty `params` to `path` as a query string. */
+export function withQuery(path: string, params: Record<string, string | number | undefined>) {
+	const query = new URLSearchParams();
+	for (const [name, value] of Object.entries(params)) {
+		if (value !== undefined && value !== '') query.set(name, String(value));
+	}
+	const search = query.toString();
+	return search ? `${path}?${search}` : path;
+}

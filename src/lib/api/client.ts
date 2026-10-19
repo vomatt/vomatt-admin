@@ -1,5 +1,5 @@
 // Mirrors vomatt-web src/lib/api/client.ts; change both. Admin differences:
-// no locale header (English only), and a 403 is an AuthError like a 401.
+// no locale header (English only), and a session-ending 403 is an AuthError like a 401.
 
 import { getTokens } from '@/lib/api/auth';
 import { backendFetch } from '@/lib/api/backend-fetch';
@@ -79,11 +79,29 @@ export async function publicFetch<T = any>(
 }
 
 /**
+ * 403 codes that mean the caller can't use the admin API at all. Other 403s,
+ * like `admin.self_action_forbidden`, refuse one action and stay ApiErrors.
+ */
+const SESSION_ENDING_403 = new Set(['common.forbidden', 'auth.admin.forbidden', 'auth.account_banned']);
+
+async function endsSession(response: Response) {
+	if (response.status === 401) return true;
+	if (response.status !== 403) return false;
+	try {
+		const errorCode = JSON.parse(await response.clone().text())?.errorCode;
+		return !errorCode || SESSION_ENDING_403.has(errorCode);
+	} catch {
+		return true;
+	}
+}
+
+/**
  * Fetches a backend endpoint as the signed-in admin.
  *
  * Tokens are refreshed only in the proxy (see vomatt-web's copy for why). A
- * 401 means the session is over and a 403 means the account lost its admin
- * role; both throw AuthError so callers send the user back to login.
+ * 401 means the session is over and a session-ending 403 means the account
+ * lost its admin role or was suspended; both throw AuthError so callers send
+ * the user back to login.
  */
 export async function apiClient<T = any>(
 	endpoint: string,
@@ -104,7 +122,7 @@ export async function apiClient<T = any>(
 		cache: 'no-store',
 	});
 
-	if (response.status === 401 || response.status === 403) {
+	if (await endsSession(response)) {
 		throw new AuthError('Your admin session has ended. Please log in again.', response.status);
 	}
 

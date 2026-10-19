@@ -3,7 +3,9 @@
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useState, useTransition } from 'react';
 
-import { buttonClass, errorClass, inputClass } from '@/components/ui/styles';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { requestOtp, verifyOtp } from '@/lib/api/services/auth';
 
 /** Two steps: email → emailed code. `redirectTo` is already a safe same-origin path. */
@@ -36,21 +38,14 @@ export function LoginForm({ redirectTo, notice }: { redirectTo: string; notice?:
 	return (
 		<form onSubmit={handleSubmit} className="flex w-full max-w-sm flex-col gap-4">
 			{notice ? <p className="text-sm text-muted-foreground">{notice}</p> : null}
-			<label className="flex flex-col gap-1.5 text-sm">
+			<Label className="flex-col items-stretch gap-1.5">
 				Email
-				<input
-					type="email"
-					name="email"
-					required
-					autoComplete="email"
-					readOnly={codeSent}
-					className={inputClass}
-				/>
-			</label>
+				<Input type="email" name="email" required autoComplete="email" readOnly={codeSent} />
+			</Label>
 			{codeSent ? (
-				<label className="flex flex-col gap-1.5 text-sm">
+				<Label className="flex-col items-stretch gap-1.5">
 					Code sent to your email
-					<input
+					<Input
 						name="code"
 						required
 						inputMode="numeric"
@@ -58,29 +53,29 @@ export function LoginForm({ redirectTo, notice }: { redirectTo: string; notice?:
 						pattern="[0-9]{6}"
 						maxLength={6}
 						autoFocus
-						className={inputClass}
 					/>
-				</label>
+				</Label>
 			) : null}
 			{error ? (
-				<p role="alert" className={errorClass}>
+				<p role="alert" className="text-sm text-destructive">
 					{error}
 				</p>
 			) : null}
-			<button type="submit" disabled={pending} className={buttonClass}>
+			<Button type="submit" disabled={pending}>
 				{codeSent ? 'Sign in' : 'Send code'}
-			</button>
+			</Button>
 			{codeSent ? (
-				<button
+				<Button
 					type="button"
+					variant="link"
 					onClick={() => {
 						setCodeSent(false);
 						setError(null);
 					}}
-					className="text-sm text-muted-foreground underline"
+					className="text-muted-foreground underline"
 				>
 					Use a different email
-				</button>
+				</Button>
 			) : null}
 		</form>
 	);
