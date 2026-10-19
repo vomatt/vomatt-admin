@@ -7,6 +7,7 @@
 		"build": "next build",
 		"start": "next start --port=3003",
 		"lint": "eslint src",
+		"type-check": "next typegen && tsc --noEmit",
 		"test": "jest",
 		"test:watch": "jest --watch",
 		"test:coverage": "jest --coverage"

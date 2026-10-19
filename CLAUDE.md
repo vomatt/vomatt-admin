@@ -9,7 +9,7 @@ npm run dev           # Start dev server (Turbopack, port 3003)
 npm run build         # Production build
 npm run lint          # ESLint (next/core-web-vitals + simple-import-sort)
 npm run test          # Jest (jsdom)
-npx tsc --noEmit      # Type-check without emitting
+npm run type-check    # Generate route types (PageProps), then tsc --noEmit
 ```
 
 Tests live in `src/__tests__/` and match `**/*.test.{ts,tsx}`.
