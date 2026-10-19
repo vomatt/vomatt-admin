@@ -62,13 +62,18 @@ describe('verifyAccessToken', () => {
 });
 
 describe('isAdmin', () => {
-	it('is true when the roles claim includes admin', () => {
-		expect(tokens.isAdmin({ roles: ['user', 'admin'] })).toBe(true);
+	it('is true for an admin-scoped token with the admin role', () => {
+		expect(tokens.isAdmin({ roles: ['user', 'admin'], scope: 'admin' })).toBe(true);
 	});
 
 	it('is false without the admin role or without roles', () => {
-		expect(tokens.isAdmin({ roles: ['user'] })).toBe(false);
-		expect(tokens.isAdmin({})).toBe(false);
+		expect(tokens.isAdmin({ roles: ['user'], scope: 'admin' })).toBe(false);
+		expect(tokens.isAdmin({ scope: 'admin' })).toBe(false);
+	});
+
+	it('is false for a consumer sign-in, even with the admin role', () => {
+		expect(tokens.isAdmin({ roles: ['user', 'admin'], scope: 'user' })).toBe(false);
+		expect(tokens.isAdmin({ roles: ['user', 'admin'] })).toBe(false);
 	});
 });
 

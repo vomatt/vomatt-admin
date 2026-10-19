@@ -23,8 +23,11 @@ jest.mock('next/headers', () => ({
 process.env.API_URL = 'https://api.example.test';
 
 import { requestOtp } from '@/lib/api/services/auth';
+import { deleteComment } from '@/lib/api/services/comments';
 import { setLookupActive } from '@/lib/api/services/lookups';
+import { closePoll, deletePoll, restorePoll } from '@/lib/api/services/polls';
 import { createTag, deleteTag } from '@/lib/api/services/tags';
+import { setUserRoles, suspendUser } from '@/lib/api/services/users';
 
 function jsonResponse(body: unknown, status = 200) {
 	return new Response(JSON.stringify(body), {
@@ -87,16 +90,80 @@ describe('lookup actions', () => {
 	});
 });
 
+describe('user actions', () => {
+	it('replaces the roles with PUT', async () => {
+		fetchMock.mockResolvedValue(jsonResponse({ success: true, data: { id: 'u1' } }));
+
+		await setUserRoles('u1', ['user', 'moderator']);
+
+		const [url, init] = fetchMock.mock.calls[0];
+		expect(url).toBe('https://api.example.test/api/admin/users/u1/roles');
+		expect(init.method).toBe('PUT');
+		expect(JSON.parse(init.body)).toEqual({ roles: ['user', 'moderator'] });
+	});
+
+	it('sends the suspend reason', async () => {
+		fetchMock.mockResolvedValue(jsonResponse({ success: true, data: { id: 'u1', active: false } }));
+
+		await suspendUser('u1', 'Spam');
+
+		const [url, init] = fetchMock.mock.calls[0];
+		expect(url).toBe('https://api.example.test/api/admin/users/u1/suspend');
+		expect(init.method).toBe('PATCH');
+		expect(JSON.parse(init.body)).toEqual({ reason: 'Spam' });
+	});
+
+	it('keeps the session when the API refuses a self-action', async () => {
+		fetchMock.mockResolvedValue(
+			jsonResponse(
+				{ success: false, errorCode: 'admin.self_action_forbidden', message: 'You cannot suspend yourself' },
+				403
+			)
+		);
+
+		expect(await suspendUser('me', null)).toEqual({
+			ok: false,
+			status: 403,
+			errorCode: 'admin.self_action_forbidden',
+			message: 'You cannot suspend yourself',
+		});
+	});
+
+	it('sends a suspended admin back to login', async () => {
+		fetchMock.mockResolvedValue(jsonResponse({ success: false, errorCode: 'auth.account_banned' }, 403));
+
+		await expect(suspendUser('u1', null)).rejects.toThrow('NEXT_REDIRECT /login?session_expired=forbidden');
+	});
+});
+
+describe('poll and comment actions', () => {
+	it.each([
+		['close', () => closePoll('v1'), 'PUT', '/api/admin/votes/v1/close'],
+		['delete', () => deletePoll('v1'), 'DELETE', '/api/admin/votes/v1'],
+		['restore', () => restorePoll('v1'), 'PATCH', '/api/admin/votes/v1/restore'],
+		['delete comment', () => deleteComment('c1'), 'DELETE', '/api/admin/comments/c1'],
+	])('%s calls %s', async (_name, run, method, path) => {
+		fetchMock.mockResolvedValue(jsonResponse({ success: true, data: { success: true } }));
+
+		const result = await run();
+
+		expect(result.ok).toBe(true);
+		const [url, init] = fetchMock.mock.calls[0];
+		expect(url).toBe(`https://api.example.test${path}`);
+		expect(init.method).toBe(method);
+		expect(mockRefresh).toHaveBeenCalled();
+	});
+});
+
 describe('requestOtp', () => {
-	it('asks for an admin-only code', async () => {
+	it('asks the admin console endpoint for a code', async () => {
 		fetchMock.mockResolvedValue(jsonResponse({ success: true, data: null }));
 
 		await requestOtp(' Admin@Example.com ');
 
-		expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
-			email: 'admin@example.com',
-			checkRole: 'true',
-		});
+		const [url, init] = fetchMock.mock.calls[0];
+		expect(url).toBe('https://api.example.test/api/auth/admin/send-otp');
+		expect(JSON.parse(init.body)).toEqual({ email: 'admin@example.com' });
 	});
 
 	it('explains a non-admin account', async () => {

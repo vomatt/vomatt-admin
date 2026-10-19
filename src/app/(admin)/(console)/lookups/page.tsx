@@ -1,87 +1,60 @@
 import type { Metadata } from 'next';
 
+import { FilterInput, Filters } from '@/components/admin/Filters';
+import { PageHeader } from '@/components/admin/PageHeader';
 import { LookupForm } from '@/components/lookups/LookupForm';
 import { LookupRow } from '@/components/lookups/LookupRow';
-import { buttonClass, inputClass } from '@/components/ui/styles';
-import { adminFetch } from '@/lib/api/admin';
-import { ApiError } from '@/lib/api/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { adminFetch, withQuery } from '@/lib/api/admin';
+import { readParam } from '@/lib/search-params';
 import { Lookup } from '@/types';
 
 export const metadata: Metadata = { title: 'Lookups' };
 
-/** The single-item endpoint also returns inactive items, which type listings leave out. */
-async function findItem(type: string, key: string): Promise<Lookup | null> {
-	try {
-		return await adminFetch<Lookup>(`/lookups/${encodeURIComponent(type)}/${encodeURIComponent(key)}`);
-	} catch (error) {
-		if (error instanceof ApiError && error.statusCode === 404) return null;
-		throw error;
-	}
+/** Groups items by type, keeping the API's order (type, then seq). */
+function byType(items: Lookup[]) {
+	const groups = new Map<string, Lookup[]>();
+	for (const item of items) groups.set(item.lookupType, [...(groups.get(item.lookupType) ?? []), item]);
+	return [...groups];
 }
 
 export default async function LookupsPage({ searchParams }: PageProps<'/lookups'>) {
 	const params = await searchParams;
-	const type = typeof params.type === 'string' ? params.type.trim() : '';
-	const key = typeof params.key === 'string' ? params.key.trim() : '';
-
-	// The API can't list types: an admin picks one by name
-	const [items, found] = await Promise.all([
-		type ? adminFetch<Lookup[]>(`/lookups/${encodeURIComponent(type)}`) : null,
-		type && key ? findItem(type, key) : null,
-	]);
+	const type = readParam(params, 'type');
+	// Inactive items included, so they can be re-activated
+	const items = await adminFetch<Lookup[]>(withQuery('/admin/lookups', { type }));
+	const groups = byType(items);
 
 	return (
 		<main className="flex flex-col gap-6 p-8">
-			<h1 className="display-heading text-2xl">Lookups</h1>
+			<PageHeader title="Lookups" description="Dictionary items by type, inactive ones included." />
+			<Filters pathname="/lookups">
+				<FilterInput name="type" label="Type" placeholder="Every type" defaultValue={type} />
+			</Filters>
 
-			<form className="flex flex-wrap items-end gap-3">
-				<label className="flex flex-col gap-1 text-sm">
-					Type
-					<input name="type" required defaultValue={type} className={inputClass} />
-				</label>
-				<label className="flex flex-col gap-1 text-sm">
-					Key (finds inactive items too)
-					<input name="key" defaultValue={key} className={inputClass} />
-				</label>
-				<button type="submit" className={buttonClass}>
-					Show
-				</button>
-			</form>
-
-			{type && key ? (
-				<section className="flex flex-col gap-2">
-					<h2 className="font-medium">
-						{type}/{key}
-					</h2>
-					{found ? (
-						<ul className="rounded-md border border-border">
-							<LookupRow lookup={found} />
-						</ul>
-					) : (
-						<p className="text-sm text-muted-foreground">No item with this type and key.</p>
-					)}
-				</section>
-			) : null}
-
-			{items ? (
-				<section className="flex flex-col gap-2">
-					<h2 className="font-medium">Active items of {type}</h2>
-					{items.length ? (
-						<ul className="divide-y divide-border rounded-md border border-border">
-							{items.map((item) => (
+			{groups.length ? (
+				groups.map(([groupType, groupItems]) => (
+					<section key={groupType} className="flex flex-col gap-2">
+						<h2 className="font-mono text-sm font-medium">{groupType}</h2>
+						<ul className="divide-y rounded-md border">
+							{groupItems.map((item) => (
 								<LookupRow key={item.id} lookup={item} />
 							))}
 						</ul>
-					) : (
-						<p className="text-sm text-muted-foreground">No active items of this type.</p>
-					)}
-				</section>
-			) : null}
+					</section>
+				))
+			) : (
+				<p className="text-sm text-muted-foreground">{type ? `No items of type ${type}.` : 'No items yet.'}</p>
+			)}
 
-			<section className="flex flex-col gap-2">
-				<h2 className="font-medium">New item</h2>
-				<LookupForm key={type} defaultType={type} />
-			</section>
+			<Card>
+				<CardHeader>
+					<CardTitle>New item</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<LookupForm key={type} defaultType={type} />
+				</CardContent>
+			</Card>
 		</main>
 	);
 }

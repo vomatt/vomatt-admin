@@ -23,7 +23,7 @@ Staff-only Next.js 16 App Router app, separate from the public site `vomatt-web`
 
 ## API contract (vomatt-api)
 
-The contract is `../vomatt-api/docs/frontend/openapi.json` (generated, ~340 KB). Read only the admin part: paths under `/api/admin/**` (tags `Admin - Lookup`, `Admin Tag`) plus the `components/schemas` they `$ref`. Don't read the whole file or the public endpoints. Extract it with jq:
+The contract is `../vomatt-api/docs/frontend/openapi.json` (generated, ~340 KB). Read only the admin part: paths under `/api/admin/**` (tags `Admin - *`, `Admin Tag`) plus the `components/schemas` they `$ref`. Don't read the whole file or the public endpoints. Extract it with jq:
 
 ```bash
 jq '.paths | with_entries(select(.key | startswith("/api/admin")))' ../vomatt-api/docs/frontend/openapi.json
