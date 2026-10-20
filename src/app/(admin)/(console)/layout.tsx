@@ -28,9 +28,8 @@ import {
 	SidebarSeparator,
 	SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { ACCESS_TOKEN } from '@/lib/api/constants';
+import { decodeToken, getTokens } from '@/lib/api/auth';
 import { signout } from '@/lib/api/services/auth';
-import { verifyAccessToken } from '@/lib/api/tokens';
 
 const NAV = [
 	{ href: '/', label: 'Overview', icon: RiBarChartBoxLine },
@@ -45,10 +44,9 @@ const NAV = [
 // Signed-in views; the proxy has already checked the admin session
 export default async function ConsoleLayout({ children }: { children: ReactNode }) {
 	// SidebarProvider saves the collapsed state in this cookie
-	const cookieStore = await cookies();
-	const sidebarOpen = cookieStore.get('sidebar_state')?.value !== 'false';
-	const accessToken = cookieStore.get(ACCESS_TOKEN)?.value;
-	const email = accessToken ? (await verifyAccessToken(accessToken))?.email : undefined;
+	const sidebarOpen = (await cookies()).get('sidebar_state')?.value !== 'false';
+	const accessToken = (await getTokens())?.accessToken;
+	const email = accessToken ? (await decodeToken(accessToken))?.email : undefined;
 
 	return (
 		<SidebarProvider defaultOpen={sidebarOpen} style={{ '--sidebar-width': '14rem' } as CSSProperties}>
@@ -78,7 +76,7 @@ export default async function ConsoleLayout({ children }: { children: ReactNode 
 					</SidebarMenu>
 				</SidebarContent>
 				<SidebarFooter>
-					{email ? <SignedInAs email={email} /> : null}
+					<SignedInAs email={email} />
 					<form action={signout}>
 						<SidebarMenu>
 							<SidebarMenuItem>

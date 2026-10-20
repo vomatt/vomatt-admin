@@ -9,4 +9,10 @@ describe('SignedInAs', () => {
 		expect(screen.getByText('Signed in as')).toBeInTheDocument();
 		expect(screen.getByText('admin@example.com')).toBeInTheDocument();
 	});
+
+	it.each([undefined, ''])('renders nothing without an email (%p)', (email) => {
+		const { container } = render(<SignedInAs email={email} />);
+
+		expect(container).toBeEmptyDOMElement();
+	});
 });

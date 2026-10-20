@@ -1,5 +1,7 @@
-/** The signed-in admin, shown above Sign out in the sidebar footer. */
-export function SignedInAs({ email }: { email: string }) {
+/** The signed-in admin, shown above Sign out in the sidebar footer; nothing without an email. */
+export function SignedInAs({ email }: { email?: string }) {
+	if (!email) return null;
+
 	return (
 		<div className="flex items-center gap-2 px-2 py-1.5 text-sm">
 			<span
