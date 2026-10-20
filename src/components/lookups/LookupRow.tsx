@@ -6,6 +6,7 @@ import { ConfirmAction } from '@/components/admin/ConfirmAction';
 import { LookupForm } from '@/components/lookups/LookupForm';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { FieldError } from '@/components/ui/field';
 import { deleteLookup, setLookupActive } from '@/lib/api/services/lookups';
 import { Lookup } from '@/types';
 
@@ -53,7 +54,7 @@ export function LookupRow({ lookup }: { lookup: Lookup }) {
 			<Button variant="outline" size="sm" onClick={() => setEditing(true)}>
 				Edit
 			</Button>
-			<Button variant="outline" size="sm" onClick={toggleActive} disabled={pending}>
+			<Button variant="outline" size="sm" onClick={toggleActive} loading={pending}>
 				{lookup.isActive ? 'Deactivate' : 'Activate'}
 			</Button>
 			<ConfirmAction
@@ -63,11 +64,7 @@ export function LookupRow({ lookup }: { lookup: Lookup }) {
 				description="This can't be undone. Deactivate it instead if it may come back."
 				destructive
 			/>
-			{error ? (
-				<p role="alert" className="basis-full text-sm text-destructive">
-					{error}
-				</p>
-			) : null}
+			<FieldError className="basis-full">{error}</FieldError>
 		</li>
 	);
 }

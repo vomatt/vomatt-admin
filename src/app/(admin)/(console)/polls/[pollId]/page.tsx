@@ -9,6 +9,7 @@ import { AUDIENCE_LABELS, VOTER_VISIBILITY_LABELS } from '@/components/polls/lab
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { adminFetch } from '@/lib/api/admin';
 import { ApiError } from '@/lib/api/client';
 import { closePoll, deletePoll, restorePoll } from '@/lib/api/services/polls';
@@ -133,9 +134,7 @@ export default async function PollPage({ params }: PageProps<'/polls/[pollId]'>)
 											<p className="text-sm text-muted-foreground">{option.description}</p>
 										) : null}
 										{share !== null ? (
-											<div className="h-1.5 overflow-hidden rounded-full bg-muted">
-												<div className="h-full bg-primary" style={{ width: `${share}%` }} />
-											</div>
+											<Progress value={share} className="h-1.5" aria-label={`${option.text} share`} />
 										) : null}
 									</li>
 								);

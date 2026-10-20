@@ -14,6 +14,7 @@ import {
 	AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { FieldError } from '@/components/ui/field';
 import { ActionResult } from '@/lib/api/action';
 
 /**
@@ -68,16 +69,12 @@ export function ConfirmAction({
 					<AlertDialogTitle>{title}</AlertDialogTitle>
 					<AlertDialogDescription>{description}</AlertDialogDescription>
 				</AlertDialogHeader>
-				{error ? (
-					<p role="alert" className="text-sm text-destructive">
-						{error}
-					</p>
-				) : null}
+				<FieldError>{error}</FieldError>
 				<AlertDialogFooter>
 					<AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
 					<AlertDialogAction
 						variant={destructive ? 'destructive' : 'default'}
-						disabled={pending}
+						loading={pending}
 						onClick={handleConfirm}
 					>
 						{confirmLabel}
