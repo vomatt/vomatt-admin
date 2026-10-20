@@ -13,6 +13,7 @@
 		"test:coverage": "jest --coverage"
 	},
 	"dependencies": {
+		"@remixicon/react": "^4.9.0",
 		"@sanity/color-input": "^6.1.8",
 		"@sanity/icons": "^5.2.3",
 		"@sanity/ui": "^4.4.9",
