@@ -83,7 +83,7 @@ export default async function UserPage({ params }: PageProps<'/users/[userId]'>)
 							{details.map(([term, value]) => (
 								<div key={term} className="contents">
 									<dt className="text-muted-foreground">{term}</dt>
-									<dd className="break-all">{value}</dd>
+									<dd className="wrap-anywhere">{value}</dd>
 								</div>
 							))}
 						</dl>

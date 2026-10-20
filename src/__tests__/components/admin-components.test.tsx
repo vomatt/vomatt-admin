@@ -37,7 +37,7 @@ describe('Pagination', () => {
 	it('keeps non-empty filters in the page links', () => {
 		render(<Pagination pathname="/users" params={{ q: 'ann', role: '' }} page={2} limit={20} total={45} />);
 
-		expect(screen.getByText(/45 results · page 2 of 3/)).toBeInTheDocument();
+		expect(screen.getByText(/45 results, page 2 of 3/)).toBeInTheDocument();
 		expect(screen.getByRole('link', { name: 'Previous' })).toHaveAttribute('href', '/users?q=ann&page=1');
 		expect(screen.getByRole('link', { name: 'Next' })).toHaveAttribute('href', '/users?q=ann&page=3');
 	});

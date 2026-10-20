@@ -31,7 +31,7 @@ export function TagRow({ tag }: { tag: Tag }) {
 				</p>
 				{tag.description ? <p className="text-sm text-muted-foreground">{tag.description}</p> : null}
 			</div>
-			<span className="text-sm text-muted-foreground">{tag.usageCount} polls</span>
+			<span className="text-sm text-muted-foreground">{tag.usageCount} poll{tag.usageCount === 1 ? '' : 's'}</span>
 			<Button variant="outline" size="sm" onClick={() => setEditing(true)}>
 				Edit
 			</Button>

@@ -26,7 +26,7 @@ export function Pagination({
 	return (
 		<nav aria-label="Pagination" className="flex items-center justify-between gap-4 text-sm">
 			<p className="text-muted-foreground">
-				{total} result{total === 1 ? '' : 's'} · page {page} of {pages}
+				{total} result{total === 1 ? '' : 's'}, page {page} of {pages}
 			</p>
 			<div className="flex gap-2">
 				{page > 1 ? (
