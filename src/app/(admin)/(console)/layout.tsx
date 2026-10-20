@@ -15,6 +15,7 @@ import type { CSSProperties, ReactNode } from 'react';
 
 import { NavLink } from '@/components/admin/NavLink';
 import { SignedInAs } from '@/components/admin/SignedInAs';
+import { ThemeSwitcher } from '@/components/admin/ThemeSwitcher';
 import { BrandLogo } from '@/components/BrandLogo';
 import {
 	Sidebar,
@@ -76,6 +77,7 @@ export default async function ConsoleLayout({ children }: { children: ReactNode 
 					</SidebarMenu>
 				</SidebarContent>
 				<SidebarFooter>
+					<ThemeSwitcher />
 					<SignedInAs email={email} />
 					<form action={signout}>
 						<SidebarMenu>
