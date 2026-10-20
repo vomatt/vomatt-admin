@@ -50,7 +50,7 @@ export function RolesForm({ userId, roles }: { userId: string; roles: string[] }
 				))}
 			</fieldset>
 			<div className="flex items-center gap-3">
-				<Button type="submit" size="sm" disabled={pending || !changed || selected.size === 0}>
+				<Button type="submit" size="sm" loading={pending} disabled={!changed || selected.size === 0}>
 					Save roles
 				</Button>
 				{selected.size === 0 ? <p className="text-sm text-muted-foreground">Pick at least one role.</p> : null}

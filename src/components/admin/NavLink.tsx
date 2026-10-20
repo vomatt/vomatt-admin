@@ -4,23 +4,27 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { ComponentProps } from 'react';
 
-import { cn } from '@/lib/utils';
+import { SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
 
 /** A sidebar link, highlighted on its own section. */
-export function NavLink({ href, className, ...props }: ComponentProps<typeof Link> & { href: string }) {
+export function NavLink({ href, onClick, ...props }: ComponentProps<typeof Link> & { href: string }) {
 	const pathname = usePathname();
+	const { setOpenMobile } = useSidebar();
 	const active = href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
 
 	return (
-		<Link
-			href={href}
-			aria-current={active ? 'page' : undefined}
-			className={cn(
-				'flex items-center gap-2 rounded-md px-2 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground [&_svg]:size-4',
-				active && 'bg-muted font-medium text-foreground',
-				className
-			)}
-			{...props}
-		/>
+		<SidebarMenuItem>
+			<SidebarMenuButton asChild isActive={active}>
+				<Link
+					href={href}
+					aria-current={active ? 'page' : undefined}
+					onClick={(event) => {
+						setOpenMobile(false);
+						onClick?.(event);
+					}}
+					{...props}
+				/>
+			</SidebarMenuButton>
+		</SidebarMenuItem>
 	);
 }

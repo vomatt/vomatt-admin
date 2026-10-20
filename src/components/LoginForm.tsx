@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { type FormEvent, useState, useTransition } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { FieldError } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { requestOtp, verifyOtp } from '@/lib/api/services/auth';
@@ -56,12 +57,8 @@ export function LoginForm({ redirectTo, notice }: { redirectTo: string; notice?:
 					/>
 				</Label>
 			) : null}
-			{error ? (
-				<p role="alert" className="text-sm text-destructive">
-					{error}
-				</p>
-			) : null}
-			<Button type="submit" disabled={pending}>
+			<FieldError>{error}</FieldError>
+			<Button type="submit" loading={pending}>
 				{codeSent ? 'Sign in' : 'Send code'}
 			</Button>
 			{codeSent ? (

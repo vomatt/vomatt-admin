@@ -1,11 +1,22 @@
 import { ChartColumn, ExternalLink, FileText, ListTree, LogOut, MessageSquare, Tags, Users, Vote } from 'lucide-react';
+import { cookies } from 'next/headers';
 import Link from 'next/link';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 import { NavLink } from '@/components/admin/NavLink';
 import { BrandLogo } from '@/components/BrandLogo';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
+import {
+	Sidebar,
+	SidebarContent,
+	SidebarFooter,
+	SidebarHeader,
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
+	SidebarProvider,
+	SidebarSeparator,
+	SidebarTrigger,
+} from '@/components/ui/sidebar';
 import { signout } from '@/lib/api/services/auth';
 
 const NAV = [
@@ -19,36 +30,54 @@ const NAV = [
 ];
 
 // Signed-in views; the proxy has already checked the admin session
-export default function ConsoleLayout({ children }: { children: ReactNode }) {
+export default async function ConsoleLayout({ children }: { children: ReactNode }) {
+	// SidebarProvider saves the collapsed state in this cookie
+	const sidebarOpen = (await cookies()).get('sidebar_state')?.value !== 'false';
+
 	return (
-		<div className="flex min-h-dvh">
-			<aside className="sticky top-0 flex h-dvh w-56 shrink-0 flex-col gap-1 border-r bg-sidebar p-4 text-sidebar-foreground">
-				<Link href="/" className="mb-4 w-20 px-2 text-foreground">
-					<BrandLogo />
-					<span className="sr-only">Vomatt Admin home</span>
-				</Link>
-				<nav className="flex flex-col gap-1 text-sm">
-					{NAV.map(({ href, label, icon: Icon }) => (
-						<NavLink key={href} href={href}>
-							<Icon aria-hidden />
-							{label}
+		<SidebarProvider defaultOpen={sidebarOpen} style={{ '--sidebar-width': '14rem' } as CSSProperties}>
+			<Sidebar>
+				<SidebarHeader>
+					<Link href="/" className="mt-2 w-20 px-2 text-foreground">
+						<BrandLogo />
+						<span className="sr-only">Vomatt Admin home</span>
+					</Link>
+				</SidebarHeader>
+				<SidebarContent className="p-2">
+					<SidebarMenu>
+						{NAV.map(({ href, label, icon: Icon }) => (
+							<NavLink key={href} href={href}>
+								<Icon aria-hidden />
+								{label}
+							</NavLink>
+						))}
+					</SidebarMenu>
+					<SidebarSeparator className="mx-0" />
+					<SidebarMenu>
+						{/* No prefetch: the Studio has its own root layout, so it loads as a full page */}
+						<NavLink href="/sanity" prefetch={false}>
+							<ExternalLink aria-hidden />
+							Content (Sanity)
 						</NavLink>
-					))}
-					<Separator className="my-2" />
-					{/* No prefetch: the Studio has its own root layout, so it loads as a full page */}
-					<NavLink href="/sanity" prefetch={false}>
-						<ExternalLink aria-hidden />
-						Content (Sanity)
-					</NavLink>
-				</nav>
-				<form action={signout} className="mt-auto">
-					<Button type="submit" variant="ghost" size="sm" className="w-full justify-start text-muted-foreground">
-						<LogOut aria-hidden />
-						Sign out
-					</Button>
-				</form>
-			</aside>
-			<div className="min-w-0 flex-1">{children}</div>
-		</div>
+					</SidebarMenu>
+				</SidebarContent>
+				<SidebarFooter>
+					<form action={signout}>
+						<SidebarMenu>
+							<SidebarMenuItem>
+								<SidebarMenuButton type="submit" className="text-muted-foreground">
+									<LogOut aria-hidden />
+									Sign out
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+						</SidebarMenu>
+					</form>
+				</SidebarFooter>
+			</Sidebar>
+			<div className="min-w-0 flex-1">
+				<SidebarTrigger className="m-2" />
+				{children}
+			</div>
+		</SidebarProvider>
 	);
 }

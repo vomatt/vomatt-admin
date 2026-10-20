@@ -4,6 +4,7 @@ import { type FormEvent, useState, useTransition } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { FieldError } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -98,7 +99,7 @@ export function LookupForm({
 				<Checkbox name="frontendUsing" defaultChecked={lookup?.frontendUsing} />
 				In frontend dictionary
 			</Label>
-			<Button type="submit" disabled={pending} className="self-end sm:col-start-4">
+			<Button type="submit" loading={pending} className="self-end sm:col-start-4">
 				{lookup ? 'Save' : 'Add item'}
 			</Button>
 			{lookup ? (
@@ -106,11 +107,7 @@ export function LookupForm({
 					Emptied optional fields keep their current value: the API can&apos;t clear them.
 				</p>
 			) : null}
-			{error ? (
-				<p role="alert" className="text-sm text-destructive sm:col-span-4">
-					{error}
-				</p>
-			) : null}
+			<FieldError className="sm:col-span-4">{error}</FieldError>
 		</form>
 	);
 }

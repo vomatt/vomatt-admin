@@ -13,6 +13,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '@/components/ui/dialog';
+import { FieldError } from '@/components/ui/field';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { suspendUser } from '@/lib/api/services/users';
@@ -60,18 +61,14 @@ export function SuspendDialog({ userId, username }: { userId: string; username: 
 						<Label htmlFor="suspend-reason">Reason (audit log only)</Label>
 						<Textarea id="suspend-reason" name="reason" maxLength={500} rows={3} />
 					</div>
-					{error ? (
-						<p role="alert" className="text-sm text-destructive">
-							{error}
-						</p>
-					) : null}
+					<FieldError>{error}</FieldError>
 					<DialogFooter>
 						<DialogClose asChild>
 							<Button type="button" variant="outline" disabled={pending}>
 								Cancel
 							</Button>
 						</DialogClose>
-						<Button type="submit" variant="destructive" disabled={pending}>
+						<Button type="submit" variant="destructive" loading={pending}>
 							Suspend
 						</Button>
 					</DialogFooter>

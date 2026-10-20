@@ -3,6 +3,7 @@
 import { type FormEvent, useState, useTransition } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { FieldError } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createTag, updateTag } from '@/lib/api/services/tags';
@@ -55,14 +56,10 @@ export function TagForm({ tag, onDone }: { tag?: Tag; onDone?: () => void }) {
 				Order
 				<Input name="displayOrder" type="number" step={1} defaultValue={tag?.displayOrder ?? 0} />
 			</Label>
-			<Button type="submit" disabled={pending}>
+			<Button type="submit" loading={pending}>
 				{tag ? 'Save' : 'Add tag'}
 			</Button>
-			{error ? (
-				<p role="alert" className="text-sm text-destructive sm:col-span-5">
-					{error}
-				</p>
-			) : null}
+			<FieldError className="sm:col-span-5">{error}</FieldError>
 		</form>
 	);
 }
