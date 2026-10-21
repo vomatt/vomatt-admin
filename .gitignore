@@ -73,3 +73,6 @@ yarn.lock
 
 # TypeScript incremental build cache
 *.tsbuildinfo
+
+# Sanity Function bundles from `sanity blueprints deploy`
+functions/*/.build/
