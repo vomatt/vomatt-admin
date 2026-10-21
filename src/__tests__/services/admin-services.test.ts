@@ -27,7 +27,7 @@ import { deleteComment } from '@/lib/api/services/comments';
 import { setLookupActive } from '@/lib/api/services/lookups';
 import { closePoll, deletePoll, restorePoll } from '@/lib/api/services/polls';
 import { createTag, deleteTag } from '@/lib/api/services/tags';
-import { setUserRoles, suspendUser } from '@/lib/api/services/users';
+import { setUserRoles, suspendUser, unlockUserLogin } from '@/lib/api/services/users';
 
 function jsonResponse(body: unknown, status = 200) {
 	return new Response(JSON.stringify(body), {
@@ -111,6 +111,18 @@ describe('user actions', () => {
 		expect(url).toBe('https://api.example.test/api/admin/users/u1/suspend');
 		expect(init.method).toBe('PATCH');
 		expect(JSON.parse(init.body)).toEqual({ reason: 'Spam' });
+	});
+
+	it('sends the unlock-login scope', async () => {
+		fetchMock.mockResolvedValue(jsonResponse({ success: true, data: { clearedEntries: 3 } }));
+
+		const result = await unlockUserLogin('u1', { channels: ['email'], clear: [], ip: '203.0.113.5' });
+
+		const [url, init] = fetchMock.mock.calls[0];
+		expect(url).toBe('https://api.example.test/api/admin/users/u1/unlock-login');
+		expect(init.method).toBe('POST');
+		expect(JSON.parse(init.body)).toEqual({ channels: ['email'], clear: [], ip: '203.0.113.5' });
+		expect(result).toMatchObject({ ok: true, data: { clearedEntries: 3 } });
 	});
 
 	it('keeps the session when the API refuses a self-action', async () => {

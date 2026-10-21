@@ -65,6 +65,10 @@ export interface AdminUser {
 	id: string;
 	username: string;
 	displayName: string | null;
+	firstName: string | null;
+	lastName: string | null;
+	/** `yyyy-MM-dd`, shown whatever the user's visibility settings. */
+	birthday: string | null;
 	email: string | null;
 	phoneNumber: string | null;
 	authMethod: string | null;
@@ -81,6 +85,27 @@ export interface AdminUserDetail extends AdminUser {
 	pollCount: number;
 	ballotCount: number;
 	commentCount: number;
+	/** Users this user blocks. */
+	blockingCount: number;
+	/** Users who block this user. */
+	blockedByCount: number;
+}
+
+/** `AdminUserBlockResponse`: the other user of a block relationship. */
+export interface AdminUserBlock {
+	userId: string;
+	username: string;
+	displayName: string | null;
+	/** False when suspended. */
+	active: boolean;
+	blockedAt: string;
+}
+
+/** `AdminUserOptionsResponse`: the values the role and unlock-login APIs accept. */
+export interface AdminUserOptions {
+	roles: string[];
+	unlockChannels: string[];
+	unlockTargets: string[];
 }
 
 export const AUDIENCES = ['PUBLIC', 'UNLISTED', 'INVITE_ONLY'] as const;

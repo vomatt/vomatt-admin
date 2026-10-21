@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, unstable_rethrow } from 'next/navigation';
 
 import { ConfirmAction } from '@/components/admin/ConfirmAction';
 import { PageHeader } from '@/components/admin/PageHeader';
@@ -8,12 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RolesForm } from '@/components/users/RolesForm';
 import { SuspendDialog } from '@/components/users/SuspendDialog';
+import { UnlockLoginDialog } from '@/components/users/UnlockLoginDialog';
 import { RoleBadges, UserStatusBadge } from '@/components/users/UserBadges';
 import { adminFetch } from '@/lib/api/admin';
 import { ApiError } from '@/lib/api/client';
 import { unsuspendUser } from '@/lib/api/services/users';
 import { formatDateTime } from '@/lib/format';
-import { AdminUserDetail } from '@/types';
+import { AdminUserDetail, AdminUserOptions } from '@/types';
 
 export const metadata: Metadata = { title: 'User' };
 
@@ -27,12 +28,26 @@ async function getUser(userId: string) {
 	}
 }
 
+// Only the unlock dialog needs these; a failure must not take the whole page down.
+async function getOptions() {
+	try {
+		return await adminFetch<AdminUserOptions>('/admin/users/options');
+	} catch (error) {
+		unstable_rethrow(error); // the login redirect
+		console.error('Could not load user options', error);
+		return null;
+	}
+}
+
 export default async function UserPage({ params }: PageProps<'/users/[userId]'>) {
 	const { userId } = await params;
-	const user = await getUser(userId);
+	const [user, options] = await Promise.all([getUser(userId), getOptions()]);
 
 	const details: [string, React.ReactNode][] = [
 		['Display name', user.displayName ?? '—'],
+		['First name', user.firstName ?? '—'],
+		['Last name', user.lastName ?? '—'],
+		['Birthday', user.birthday ?? '—'],
 		['Email', user.email ?? '—'],
 		['Phone', user.phoneNumber ?? '—'],
 		['Sign-in method', user.authMethod ?? '—'],
@@ -46,6 +61,8 @@ export default async function UserPage({ params }: PageProps<'/users/[userId]'>)
 		{ label: 'Polls created', count: user.pollCount, href: `/polls?creatorId=${user.id}` },
 		{ label: 'Comments written', count: user.commentCount, href: `/comments?userId=${user.id}` },
 		{ label: 'Ballots held', count: user.ballotCount },
+		{ label: 'Users blocked', count: user.blockingCount, href: `/users/${user.id}/blocks` },
+		{ label: 'Blocked by', count: user.blockedByCount, href: `/users/${user.id}/blocks?direction=blocked-by` },
 	];
 
 	return (
@@ -61,6 +78,14 @@ export default async function UserPage({ params }: PageProps<'/users/[userId]'>)
 				<Button variant="outline" size="sm" asChild>
 					<Link href={`/audit-logs?resourceId=${user.id}`}>Audit log</Link>
 				</Button>
+				{options ? (
+					<UnlockLoginDialog
+						userId={user.id}
+						username={user.username}
+						channels={options.unlockChannels}
+						targets={options.unlockTargets}
+					/>
+				) : null}
 				{user.active ? (
 					<SuspendDialog userId={user.id} username={user.username} />
 				) : (
