@@ -59,6 +59,8 @@ export default async function UserPage({ params }: PageProps<'/users/[userId]'>)
 		{ label: 'Polls created', count: user.pollCount, href: `/polls?creatorId=${user.id}` },
 		{ label: 'Comments written', count: user.commentCount, href: `/comments?userId=${user.id}` },
 		{ label: 'Ballots held', count: user.ballotCount },
+		{ label: 'Users blocked', count: user.blockingCount, href: `/users/${user.id}/blocks` },
+		{ label: 'Blocked by', count: user.blockedByCount, href: `/users/${user.id}/blocks?direction=blocked-by` },
 	];
 
 	return (

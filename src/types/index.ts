@@ -85,6 +85,20 @@ export interface AdminUserDetail extends AdminUser {
 	pollCount: number;
 	ballotCount: number;
 	commentCount: number;
+	/** Users this user blocks. */
+	blockingCount: number;
+	/** Users who block this user. */
+	blockedByCount: number;
+}
+
+/** `AdminUserBlockResponse`: the other user of a block relationship. */
+export interface AdminUserBlock {
+	userId: string;
+	username: string;
+	displayName: string | null;
+	/** False when suspended. */
+	active: boolean;
+	blockedAt: string;
 }
 
 /** `AdminUserOptionsResponse`: the values the role and unlock-login APIs accept. */
