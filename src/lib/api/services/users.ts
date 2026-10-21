@@ -26,6 +26,20 @@ export async function suspendUser(userId: string, reason: string | null) {
 	});
 }
 
+/**
+ * Clears OTP sign-in lockouts (not a suspension). Empty `channels` / `clear`
+ * mean all; `ip` limits it to one client IP.
+ */
+export async function unlockUserLogin(
+	userId: string,
+	scope: { channels: string[]; clear: string[]; ip: string | null }
+) {
+	return adminMutation<{ clearedEntries: number }>(userPath(userId, '/unlock-login'), {
+		method: 'POST',
+		body: scope,
+	});
+}
+
 export async function unsuspendUser(userId: string) {
 	return adminMutation<AdminUserDetail>(userPath(userId, '/unsuspend'), { method: 'PATCH' });
 }

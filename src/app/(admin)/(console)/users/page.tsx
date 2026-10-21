@@ -67,6 +67,11 @@ export default async function UsersPage({ searchParams }: PageProps<'/users'>) {
 										{user.displayName ? (
 											<p className="text-xs text-muted-foreground">{user.displayName}</p>
 										) : null}
+										{user.lastName || user.firstName ? (
+											<p className="text-xs text-muted-foreground">
+												{[user.lastName, user.firstName].filter(Boolean).join(' ')}
+											</p>
+										) : null}
 									</TableCell>
 									<TableCell className="text-muted-foreground">
 										{user.email ?? user.phoneNumber ?? '—'}

@@ -8,12 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RolesForm } from '@/components/users/RolesForm';
 import { SuspendDialog } from '@/components/users/SuspendDialog';
+import { UnlockLoginDialog } from '@/components/users/UnlockLoginDialog';
 import { RoleBadges, UserStatusBadge } from '@/components/users/UserBadges';
 import { adminFetch } from '@/lib/api/admin';
 import { ApiError } from '@/lib/api/client';
 import { unsuspendUser } from '@/lib/api/services/users';
 import { formatDateTime } from '@/lib/format';
-import { AdminUserDetail } from '@/types';
+import { AdminUserDetail, AdminUserOptions } from '@/types';
 
 export const metadata: Metadata = { title: 'User' };
 
@@ -29,10 +30,13 @@ async function getUser(userId: string) {
 
 export default async function UserPage({ params }: PageProps<'/users/[userId]'>) {
 	const { userId } = await params;
-	const user = await getUser(userId);
+	const [user, options] = await Promise.all([getUser(userId), adminFetch<AdminUserOptions>('/admin/users/options')]);
 
 	const details: [string, React.ReactNode][] = [
 		['Display name', user.displayName ?? '—'],
+		['First name', user.firstName ?? '—'],
+		['Last name', user.lastName ?? '—'],
+		['Birthday', user.birthday ?? '—'],
 		['Email', user.email ?? '—'],
 		['Phone', user.phoneNumber ?? '—'],
 		['Sign-in method', user.authMethod ?? '—'],
@@ -61,6 +65,12 @@ export default async function UserPage({ params }: PageProps<'/users/[userId]'>)
 				<Button variant="outline" size="sm" asChild>
 					<Link href={`/audit-logs?resourceId=${user.id}`}>Audit log</Link>
 				</Button>
+				<UnlockLoginDialog
+					userId={user.id}
+					username={user.username}
+					channels={options.unlockChannels}
+					targets={options.unlockTargets}
+				/>
 				{user.active ? (
 					<SuspendDialog userId={user.id} username={user.username} />
 				) : (
