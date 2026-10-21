@@ -28,9 +28,18 @@ async function getUser(userId: string) {
 	}
 }
 
+// Only the unlock dialog needs these; a failure must not take the whole page down.
+async function getOptions() {
+	try {
+		return await adminFetch<AdminUserOptions>('/admin/users/options');
+	} catch {
+		return null;
+	}
+}
+
 export default async function UserPage({ params }: PageProps<'/users/[userId]'>) {
 	const { userId } = await params;
-	const [user, options] = await Promise.all([getUser(userId), adminFetch<AdminUserOptions>('/admin/users/options')]);
+	const [user, options] = await Promise.all([getUser(userId), getOptions()]);
 
 	const details: [string, React.ReactNode][] = [
 		['Display name', user.displayName ?? '—'],
@@ -65,12 +74,14 @@ export default async function UserPage({ params }: PageProps<'/users/[userId]'>)
 				<Button variant="outline" size="sm" asChild>
 					<Link href={`/audit-logs?resourceId=${user.id}`}>Audit log</Link>
 				</Button>
-				<UnlockLoginDialog
-					userId={user.id}
-					username={user.username}
-					channels={options.unlockChannels}
-					targets={options.unlockTargets}
-				/>
+				{options ? (
+					<UnlockLoginDialog
+						userId={user.id}
+						username={user.username}
+						channels={options.unlockChannels}
+						targets={options.unlockTargets}
+					/>
+				) : null}
 				{user.active ? (
 					<SuspendDialog userId={user.id} username={user.username} />
 				) : (
