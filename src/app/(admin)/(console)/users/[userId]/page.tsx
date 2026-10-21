@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, unstable_rethrow } from 'next/navigation';
 
 import { ConfirmAction } from '@/components/admin/ConfirmAction';
 import { PageHeader } from '@/components/admin/PageHeader';
@@ -32,7 +32,9 @@ async function getUser(userId: string) {
 async function getOptions() {
 	try {
 		return await adminFetch<AdminUserOptions>('/admin/users/options');
-	} catch {
+	} catch (error) {
+		unstable_rethrow(error); // the login redirect
+		console.error('Could not load user options', error);
 		return null;
 	}
 }
