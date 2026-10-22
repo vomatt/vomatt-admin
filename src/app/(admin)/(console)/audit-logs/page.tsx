@@ -1,21 +1,21 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 
 import { EmptyRow } from '@/components/admin/EmptyRow';
+import { EntityLink } from '@/components/admin/EntityLink';
+import { FilterChip } from '@/components/admin/FilterChip';
 import { FilterInput, Filters } from '@/components/admin/Filters';
 import { PageHeader } from '@/components/admin/PageHeader';
 import { Pagination } from '@/components/admin/Pagination';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { adminFetch, withQuery } from '@/lib/api/admin';
+import { AUDIT_RESOURCE_KINDS } from '@/lib/entities';
+import { entityName } from '@/lib/entity-name';
 import { formatDateTime } from '@/lib/format';
 import { readPage, readParam } from '@/lib/search-params';
 import { AuditLog, Page } from '@/types';
 
 export const metadata: Metadata = { title: 'Audit log' };
-
-/** Admin views for the resource types that have one. */
-const RESOURCE_PATHS: Record<string, string> = { USER: '/users', VOTE: '/polls' };
 
 /** `<input type="datetime-local">` gives a Taipei wall time without an offset. */
 function toInstant(local: string) {
@@ -42,6 +42,12 @@ export default async function AuditLogsPage({ searchParams }: PageProps<'/audit-
 			page: readPage(params),
 		})
 	);
+	// A resourceId filter carries no type; the rows it matched do
+	const resourceKind = AUDIT_RESOURCE_KINDS[filters.resourceType.toUpperCase() || (logs.content[0]?.resourceType ?? '')];
+	const [actorName, resourceName] = await Promise.all([
+		filters.userId ? entityName('user', filters.userId) : null,
+		filters.resourceId && resourceKind ? entityName(resourceKind, filters.resourceId) : null,
+	]);
 
 	return (
 		<main className="flex flex-col gap-6 p-8">
@@ -58,11 +64,45 @@ export default async function AuditLogsPage({ searchParams }: PageProps<'/audit-
 					defaultValue={filters.resourceType}
 					className="w-36"
 				/>
-				<FilterInput name="resourceId" label="Resource ID" defaultValue={filters.resourceId} className="w-72 font-mono" />
-				<FilterInput name="userId" label="Actor ID" defaultValue={filters.userId} className="w-72 font-mono" />
+				{filters.resourceId && resourceKind ? (
+					<input type="hidden" name="resourceId" value={filters.resourceId} />
+				) : (
+					<FilterInput name="resourceId" label="Resource ID" defaultValue={filters.resourceId} className="w-72 font-mono" />
+				)}
+				{filters.userId ? (
+					<input type="hidden" name="userId" value={filters.userId} />
+				) : (
+					<FilterInput name="userId" label="Actor ID" defaultValue="" className="w-72 font-mono" />
+				)}
 				<FilterInput name="from" label="From" type="datetime-local" defaultValue={filters.from} className="w-52" />
 				<FilterInput name="to" label="Until" type="datetime-local" defaultValue={filters.to} className="w-52" />
 			</Filters>
+			{filters.userId || (filters.resourceId && resourceKind) ? (
+				<div className="flex flex-wrap gap-2">
+					{filters.resourceId && resourceKind ? (
+						<FilterChip
+							label="Resource"
+							kind={resourceKind}
+							id={filters.resourceId}
+							name={resourceName}
+							pathname="/audit-logs"
+							params={filters}
+							param="resourceId"
+						/>
+					) : null}
+					{filters.userId ? (
+						<FilterChip
+							label="Actor"
+							kind="user"
+							id={filters.userId}
+							name={actorName}
+							pathname="/audit-logs"
+							params={filters}
+							param="userId"
+						/>
+					) : null}
+				</div>
+			) : null}
 
 			<div className="rounded-md border">
 				<Table>
@@ -79,15 +119,15 @@ export default async function AuditLogsPage({ searchParams }: PageProps<'/audit-
 					<TableBody>
 						{logs.content.length ? (
 							logs.content.map((log) => {
-								const resourcePath = RESOURCE_PATHS[log.resourceType];
+								const kind = AUDIT_RESOURCE_KINDS[log.resourceType];
 								return (
 									<TableRow key={log.id}>
 										<TableCell className="text-muted-foreground">{formatDateTime(log.createdAt)}</TableCell>
 										<TableCell>
 											{log.userId ? (
-												<Link href={`/users/${log.userId}`} className="hover:underline">
+												<EntityLink kind="user" id={log.userId}>
 													{log.username ?? log.userId}
-												</Link>
+												</EntityLink>
 											) : (
 												<span className="text-muted-foreground">Anonymous</span>
 											)}
@@ -102,10 +142,10 @@ export default async function AuditLogsPage({ searchParams }: PageProps<'/audit-
 											<span className="text-muted-foreground">{log.resourceType}</span>
 											{log.resourceId ? (
 												<p className="font-mono text-xs">
-													{resourcePath ? (
-														<Link href={`${resourcePath}/${log.resourceId}`} className="hover:underline">
+													{kind ? (
+														<EntityLink kind={kind} id={log.resourceId}>
 															{log.resourceId}
-														</Link>
+														</EntityLink>
 													) : (
 														log.resourceId
 													)}

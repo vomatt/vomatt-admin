@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 
 import { ConfirmAction } from '@/components/admin/ConfirmAction';
 import { EmptyRow } from '@/components/admin/EmptyRow';
+import { EntityLink } from '@/components/admin/EntityLink';
+import { FilterChip } from '@/components/admin/FilterChip';
 import { FilterInput, Filters, FilterSelect } from '@/components/admin/Filters';
 import { PageHeader } from '@/components/admin/PageHeader';
 import { Pagination } from '@/components/admin/Pagination';
@@ -10,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { adminFetch, withQuery } from '@/lib/api/admin';
 import { deleteComment } from '@/lib/api/services/comments';
+import { entityName } from '@/lib/entity-name';
 import { formatDateTime } from '@/lib/format';
 import { readPage, readParam } from '@/lib/search-params';
 import { AdminComment, Page } from '@/types';
@@ -24,9 +26,11 @@ export default async function CommentsPage({ searchParams }: PageProps<'/comment
 		voteId: readParam(params, 'voteId'),
 		userId: readParam(params, 'userId'),
 	};
-	const comments = await adminFetch<Page<AdminComment>>(
-		withQuery('/admin/comments', { ...filters, page: readPage(params) })
-	);
+	const [comments, pollName, authorName] = await Promise.all([
+		adminFetch<Page<AdminComment>>(withQuery('/admin/comments', { ...filters, page: readPage(params) })),
+		filters.voteId ? entityName('poll', filters.voteId) : null,
+		filters.userId ? entityName('user', filters.userId) : null,
+	]);
 
 	return (
 		<main className="flex flex-col gap-6 p-8">
@@ -42,9 +46,43 @@ export default async function CommentsPage({ searchParams }: PageProps<'/comment
 					defaultValue={filters.deleted}
 					options={{ false: 'Live only', true: 'Deleted only' }}
 				/>
-				<FilterInput name="voteId" label="Poll ID" defaultValue={filters.voteId} className="w-72 font-mono" />
-				<FilterInput name="userId" label="Author ID" defaultValue={filters.userId} className="w-72 font-mono" />
+				{filters.voteId ? (
+					<input type="hidden" name="voteId" value={filters.voteId} />
+				) : (
+					<FilterInput name="voteId" label="Poll ID" defaultValue="" className="w-72 font-mono" />
+				)}
+				{filters.userId ? (
+					<input type="hidden" name="userId" value={filters.userId} />
+				) : (
+					<FilterInput name="userId" label="Author ID" defaultValue="" className="w-72 font-mono" />
+				)}
 			</Filters>
+			{filters.voteId || filters.userId ? (
+				<div className="flex flex-wrap gap-2">
+					{filters.voteId ? (
+						<FilterChip
+							label="Poll"
+							kind="poll"
+							id={filters.voteId}
+							name={pollName}
+							pathname="/comments"
+							params={filters}
+							param="voteId"
+						/>
+					) : null}
+					{filters.userId ? (
+						<FilterChip
+							label="Author"
+							kind="user"
+							id={filters.userId}
+							name={authorName}
+							pathname="/comments"
+							params={filters}
+							param="userId"
+						/>
+					) : null}
+				</div>
+			) : null}
 
 			<div className="rounded-md border">
 				<Table>
@@ -75,14 +113,14 @@ export default async function CommentsPage({ searchParams }: PageProps<'/comment
 										</div>
 									</TableCell>
 									<TableCell>
-										<Link href={`/users/${comment.userId}`} className="hover:underline">
+										<EntityLink kind="user" id={comment.userId}>
 											{comment.username}
-										</Link>
+										</EntityLink>
 									</TableCell>
 									<TableCell className="max-w-xs whitespace-normal">
-										<Link href={`/polls/${comment.voteId}`} className="hover:underline">
+										<EntityLink kind="poll" id={comment.voteId}>
 											{comment.voteTitle}
-										</Link>
+										</EntityLink>
 									</TableCell>
 									<TableCell className="text-muted-foreground">{formatDateTime(comment.createdAt)}</TableCell>
 									<TableCell>

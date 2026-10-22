@@ -74,6 +74,7 @@ export default async function UserPage({ params }: PageProps<'/users/[userId]'>)
 					</span>
 				}
 				description={<RoleBadges roles={user.roles} />}
+				parent={{ href: '/users', label: 'Users' }}
 			>
 				<Button variant="outline" size="sm" asChild>
 					<Link href={`/audit-logs?resourceId=${user.id}`}>Audit log</Link>
@@ -124,7 +125,7 @@ export default async function UserPage({ params }: PageProps<'/users/[userId]'>)
 							{activity.map(({ label, count, href }) => (
 								<li key={label} className="flex items-center justify-between gap-4">
 									{href ? (
-										<Link href={href} className="hover:underline">
+										<Link href={href} className="text-link hover:underline">
 											{label}
 										</Link>
 									) : (

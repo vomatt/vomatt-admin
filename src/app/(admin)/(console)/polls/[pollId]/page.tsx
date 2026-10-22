@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { ConfirmAction } from '@/components/admin/ConfirmAction';
+import { EntityLink } from '@/components/admin/EntityLink';
 import { PageHeader } from '@/components/admin/PageHeader';
 import { PollStatusBadge } from '@/components/admin/PollStatusBadge';
 import { AUDIENCE_LABELS, VOTER_VISIBILITY_LABELS } from '@/components/polls/labels';
@@ -44,9 +45,9 @@ export default async function PollPage({ params }: PageProps<'/polls/[pollId]'>)
 		[
 			'Creator',
 			<span key="creator" className="flex flex-wrap items-center gap-2">
-				<Link href={`/users/${poll.creatorId}`} className="hover:underline">
+				<EntityLink kind="user" id={poll.creatorId}>
 					{poll.creatorUsername}
-				</Link>
+				</EntityLink>
 				{creatorEmail ? <span className="text-muted-foreground">{creatorEmail}</span> : null}
 				{creatorActive ? null : <Badge variant="destructive" dot>
 						Suspended
@@ -92,6 +93,7 @@ export default async function PollPage({ params }: PageProps<'/polls/[pollId]'>)
 					</span>
 				}
 				description={poll.description}
+				parent={{ href: '/polls', label: 'Polls' }}
 			>
 				<Button variant="outline" size="sm" asChild>
 					<Link href={`/comments?voteId=${poll.id}`}>Comments ({poll.commentCount})</Link>

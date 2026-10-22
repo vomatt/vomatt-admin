@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 jest.mock('@/lib/api/services/users', () => ({ setUserRoles: jest.fn() }));
 
 import { ConfirmAction } from '@/components/admin/ConfirmAction';
+import { FilterChip } from '@/components/admin/FilterChip';
 import { Pagination } from '@/components/admin/Pagination';
 import { PollStatusBadge } from '@/components/admin/PollStatusBadge';
 import { RolesForm } from '@/components/users/RolesForm';
@@ -46,6 +47,32 @@ describe('Pagination', () => {
 		render(<Pagination pathname="/users" params={{}} page={1} limit={20} total={0} />);
 
 		expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
+	});
+});
+
+describe('FilterChip', () => {
+	const props = { label: 'Author', kind: 'user', id: 'u1', pathname: '/comments', param: 'userId' } as const;
+
+	it('names the record and links to it', () => {
+		render(<FilterChip {...props} name="ann" params={{ q: '', userId: 'u1' }} />);
+
+		expect(screen.getByRole('link', { name: 'ann' })).toHaveAttribute('href', '/users/u1');
+	});
+
+	it('removes only its own filter', () => {
+		render(<FilterChip {...props} name="ann" params={{ q: 'spam', voteId: 'p1', userId: 'u1' }} />);
+
+		expect(screen.getByRole('link', { name: 'Remove author filter' })).toHaveAttribute(
+			'href',
+			'/comments?q=spam&voteId=p1'
+		);
+	});
+
+	it('shows the raw ID when nothing matched', () => {
+		render(<FilterChip {...props} name={null} params={{ userId: 'u1' }} />);
+
+		expect(screen.getByText('u1')).toBeInTheDocument();
+		expect(screen.queryByRole('link', { name: 'u1' })).not.toBeInTheDocument();
 	});
 });
 
