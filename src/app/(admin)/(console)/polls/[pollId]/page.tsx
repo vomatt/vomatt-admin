@@ -48,7 +48,9 @@ export default async function PollPage({ params }: PageProps<'/polls/[pollId]'>)
 					{poll.creatorUsername}
 				</Link>
 				{creatorEmail ? <span className="text-muted-foreground">{creatorEmail}</span> : null}
-				{creatorActive ? null : <Badge variant="destructive">Suspended</Badge>}
+				{creatorActive ? null : <Badge variant="destructive" dot>
+						Suspended
+					</Badge>}
 			</span>,
 		],
 		['Audience', AUDIENCE_LABELS[poll.audience]],

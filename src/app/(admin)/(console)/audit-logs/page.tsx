@@ -114,9 +114,13 @@ export default async function AuditLogsPage({ searchParams }: PageProps<'/audit-
 										</TableCell>
 										<TableCell>
 											{log.success ? (
-												<Badge variant="secondary">Success</Badge>
+												<Badge variant="outline" dot className="before:bg-tone-success">
+													Success
+												</Badge>
 											) : (
-												<Badge variant="destructive">Failed</Badge>
+												<Badge variant="destructive" dot>
+													Failed
+												</Badge>
 											)}
 										</TableCell>
 										<TableCell className="max-w-xs whitespace-normal text-muted-foreground">

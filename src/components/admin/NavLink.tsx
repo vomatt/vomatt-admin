@@ -14,7 +14,11 @@ export function NavLink({ href, onClick, ...props }: ComponentProps<typeof Link>
 
 	return (
 		<SidebarMenuItem>
-			<SidebarMenuButton asChild isActive={active}>
+			<SidebarMenuButton
+				asChild
+				isActive={active}
+				className="relative before:absolute before:inset-y-2 before:left-0 before:w-0.75 before:rounded-full data-active:before:bg-nav-indicator"
+			>
 				<Link
 					href={href}
 					aria-current={active ? 'page' : undefined}

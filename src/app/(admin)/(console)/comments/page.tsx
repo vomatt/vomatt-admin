@@ -68,8 +68,10 @@ export default async function CommentsPage({ searchParams }: PageProps<'/comment
 											{comment.content}
 										</p>
 										<div className="mt-1 flex gap-1">
-											{comment.parentId ? <Badge variant="secondary">Reply</Badge> : null}
-											{comment.deleted ? <Badge variant="destructive">Deleted</Badge> : null}
+											{comment.parentId ? <Badge variant="outline">Reply</Badge> : null}
+											{comment.deleted ? <Badge variant="destructive" dot>
+													Deleted
+												</Badge> : null}
 										</div>
 									</TableCell>
 									<TableCell>
