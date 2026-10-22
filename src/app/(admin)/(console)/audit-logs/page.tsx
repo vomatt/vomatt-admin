@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { EmptyRow } from '@/components/admin/EmptyRow';
 import { EntityLink } from '@/components/admin/EntityLink';
 import { FilterChip } from '@/components/admin/FilterChip';
-import { FilterInput, Filters } from '@/components/admin/Filters';
+import { FilterInput, Filters, FilterSelect } from '@/components/admin/Filters';
 import { PageHeader } from '@/components/admin/PageHeader';
 import { Pagination } from '@/components/admin/Pagination';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,18 @@ import { AuditLog, Page } from '@/types';
 export const metadata: Metadata = { title: 'Audit log' };
 
 /** `<input type="datetime-local">` gives a Taipei wall time without an offset. */
+// The values vomatt-api's @Auditable annotations record; the API doesn't publish the set
+const ACTIONS = [
+	'ADD_MEMBERS', 'BLOCK', 'CREATE', 'DEACTIVATE', 'DELETE', 'FORCE_CLOSE', 'FORCE_DELETE', 'INVITE', 'LIKE',
+	'REMOVE_MEMBER', 'RESTORE', 'RETRACT', 'SUSPEND', 'UNBLOCK', 'UNINVITE', 'UNLIKE', 'UNLOCK_LOGIN', 'UNSUSPEND',
+	'UPDATE', 'UPDATE_ROLES', 'VOTE',
+];
+const RESOURCE_TYPES: Record<string, string> = { USER: 'User', VOTE: 'Poll', COMMENT: 'Comment', GROUP: 'Group' };
+
+const ACTION_OPTIONS = Object.fromEntries(
+	ACTIONS.map((action) => [action, action.charAt(0) + action.slice(1).toLowerCase().replaceAll('_', ' ')])
+);
+
 function toInstant(local: string) {
 	return local ? `${local}:00+08:00` : undefined;
 }
@@ -26,8 +38,8 @@ export default async function AuditLogsPage({ searchParams }: PageProps<'/audit-
 	const params = await searchParams;
 	const filters = {
 		userId: readParam(params, 'userId'),
-		action: readParam(params, 'action'),
-		resourceType: readParam(params, 'resourceType'),
+		action: readParam(params, 'action').toUpperCase(),
+		resourceType: readParam(params, 'resourceType').toUpperCase(),
 		resourceId: readParam(params, 'resourceId'),
 		from: readParam(params, 'from'),
 		to: readParam(params, 'to'),
@@ -35,15 +47,13 @@ export default async function AuditLogsPage({ searchParams }: PageProps<'/audit-
 	const logs = await adminFetch<Page<AuditLog>>(
 		withQuery('/admin/audit-logs', {
 			...filters,
-			action: filters.action.toUpperCase(),
-			resourceType: filters.resourceType.toUpperCase(),
 			from: toInstant(filters.from),
 			to: toInstant(filters.to),
 			page: readPage(params),
 		})
 	);
 	// A resourceId filter carries no type; the rows it matched do
-	const resourceKind = AUDIT_RESOURCE_KINDS[filters.resourceType.toUpperCase() || (logs.content[0]?.resourceType ?? '')];
+	const resourceKind = AUDIT_RESOURCE_KINDS[filters.resourceType || (logs.content[0]?.resourceType ?? '')];
 	const [actorName, resourceName] = await Promise.all([
 		filters.userId ? entityName('user', filters.userId) : null,
 		filters.resourceId && resourceKind ? entityName(resourceKind, filters.resourceId) : null,
@@ -56,13 +66,12 @@ export default async function AuditLogsPage({ searchParams }: PageProps<'/audit-
 				description="Newest first. Entries are written asynchronously and may appear a moment late. Times are Taipei time."
 			/>
 			<Filters pathname="/audit-logs">
-				<FilterInput name="action" label="Action" placeholder="e.g. SUSPEND" defaultValue={filters.action} className="w-36" />
-				<FilterInput
+				<FilterSelect name="action" label="Action" defaultValue={filters.action} options={ACTION_OPTIONS} />
+				<FilterSelect
 					name="resourceType"
 					label="Resource type"
-					placeholder="e.g. VOTE"
 					defaultValue={filters.resourceType}
-					className="w-36"
+					options={RESOURCE_TYPES}
 				/>
 				{filters.resourceId && resourceKind ? (
 					<input type="hidden" name="resourceId" value={filters.resourceId} />
@@ -139,7 +148,9 @@ export default async function AuditLogsPage({ searchParams }: PageProps<'/audit-
 											</Badge>
 										</TableCell>
 										<TableCell>
-											<span className="text-muted-foreground">{log.resourceType}</span>
+											<span className="text-muted-foreground">
+												{RESOURCE_TYPES[log.resourceType] ?? log.resourceType}
+											</span>
 											{log.resourceId ? (
 												<p className="font-mono text-xs">
 													{kind ? (
