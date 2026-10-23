@@ -32,7 +32,6 @@ import {
 	SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { adminFetch } from '@/lib/api/admin';
-import { ApiError } from '@/lib/api/client';
 import { signout } from '@/lib/api/services/auth';
 
 const NAV = [
@@ -59,9 +58,8 @@ const NAV = [
 async function signedInEmail() {
 	try {
 		return (await adminFetch<{ email: string | null }>('/users/me')).email ?? undefined;
-	} catch (error) {
-		if (error instanceof ApiError) return undefined;
-		throw error;
+	} catch {
+		return undefined;
 	}
 }
 

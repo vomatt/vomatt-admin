@@ -1,7 +1,7 @@
 jest.mock('next/headers', () => ({ cookies: async () => ({ get: () => undefined }) }));
 jest.mock('next/navigation', () => ({ usePathname: () => '/comments' }));
-jest.mock('@/lib/api/admin', () => ({ adminFetch: async () => ({ email: 'admin@example.com' }) }));
-jest.mock('@/lib/api/client', () => ({ ApiError: class ApiError extends Error {} }));
+const mockAdminFetch = jest.fn();
+jest.mock('@/lib/api/admin', () => ({ adminFetch: (...args: unknown[]) => mockAdminFetch(...args) }));
 jest.mock('@/lib/api/services/auth', () => ({ signout: jest.fn() }));
 jest.mock('@/components/admin/ThemeSwitcher', () => ({ ThemeSwitcher: () => null }));
 
@@ -19,6 +19,8 @@ function group(label: string) {
 }
 
 describe('ConsoleLayout sidebar', () => {
+	beforeEach(() => mockAdminFetch.mockResolvedValue({ email: 'admin@example.com' }));
+
 	it('groups the sections by what they hold', async () => {
 		render(await ConsoleLayout({ children: null }));
 
@@ -31,7 +33,16 @@ describe('ConsoleLayout sidebar', () => {
 	it('shows the email read from the API', async () => {
 		render(await ConsoleLayout({ children: null }));
 
+		expect(mockAdminFetch).toHaveBeenCalledWith('/users/me');
 		expect(screen.getByText('admin@example.com')).toBeInTheDocument();
+	});
+
+	it('still renders when the email lookup fails', async () => {
+		mockAdminFetch.mockRejectedValue(new TypeError('fetch failed'));
+		render(await ConsoleLayout({ children: null }));
+
+		expect(screen.queryByText('admin@example.com')).not.toBeInTheDocument();
+		expect(group('People').getByRole('link', { name: 'Users' })).toBeInTheDocument();
 	});
 
 	it('marks the current section', async () => {
