@@ -78,7 +78,7 @@ Kills only the `next dev` it started (by pid), runs `docker compose down -v` for
 
 ## Helpers
 
-`bin/control-admin up|doctor|otp <email>|otp-reset <email>|sql <query>|down`, shown above. `otp` and `otp-reset` cover both the admin console's sign-in (`otp:admin-email:*`) and the public one (`otp:email:*`). `otp-reset` clears the API's 180-second resend cooldown and pending code for an email in this stack's Redis, for when a recipe needs a second sign-in. `compose.verify.yml` is the port and image override layered on `../vomatt-api/docker-compose.yml`.
+`bin/control-admin up|doctor|otp <email>|otp-reset <email>|sql <query>|down`, shown above. `otp` and `otp-reset` cover both the admin console's sign-in (`otp:admin-email:*`) and the public one (`otp:email:*`); `otp` prints the newer code when both hold one. `otp-reset` clears the API's 180-second resend cooldown and pending code for an email in this stack's Redis, for when a recipe needs a second sign-in. `compose.verify.yml` is the port and image override layered on `../vomatt-api/docker-compose.yml`.
 
 ## Gotchas
 
