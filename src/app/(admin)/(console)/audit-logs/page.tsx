@@ -21,9 +21,9 @@ export const metadata: Metadata = { title: 'Audit log' };
 const ACTIONS = [
 	'ADD_MEMBERS', 'BLOCK', 'CREATE', 'DEACTIVATE', 'DELETE', 'FORCE_CLOSE', 'FORCE_DELETE', 'INVITE', 'LIKE',
 	'REMOVE_MEMBER', 'RESTORE', 'RETRACT', 'SUSPEND', 'UNBLOCK', 'UNINVITE', 'UNLIKE', 'UNLOCK_LOGIN', 'UNSUSPEND',
-	'UPDATE', 'UPDATE_ROLES', 'VOTE',
+	'UPDATE', 'UPDATE_ROLES', 'VIEW', 'VOTE',
 ];
-const RESOURCE_TYPES: Record<string, string> = { USER: 'User', VOTE: 'Poll', COMMENT: 'Comment', GROUP: 'Group' };
+const RESOURCE_TYPES: Record<string, string> = { USER: 'User', VOTE: 'Poll', COMMENT: 'Comment', GROUP: 'Group', FEEDBACK: 'Feedback' };
 
 function actionLabel(action: string) {
 	return action.charAt(0) + action.slice(1).toLowerCase().replaceAll('_', ' ');

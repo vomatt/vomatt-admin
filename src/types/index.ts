@@ -164,6 +164,15 @@ export interface AdminComment {
 	updatedAt: string;
 }
 
+/** `AdminFeedbackResponse`: product feedback a user sent from the app. */
+export interface AdminFeedback {
+	id: string;
+	userId: string;
+	username: string;
+	content: string;
+	createdAt: string;
+}
+
 /** `AuditLogResponse`. `username` is the actor's username at the time. */
 export interface AuditLog {
 	id: string;

@@ -2,6 +2,7 @@ import {
 	RiBarChartBoxLine,
 	RiChat3Line,
 	RiExternalLinkLine,
+	RiFeedbackLine,
 	RiFileList3Line,
 	RiGroupLine,
 	RiLogoutBoxRLine,
@@ -42,6 +43,7 @@ const NAV = [
 		items: [
 			{ href: '/polls', label: 'Polls', icon: RiSurveyLine },
 			{ href: '/comments', label: 'Comments', icon: RiChat3Line },
+			{ href: '/feedback', label: 'Feedback', icon: RiFeedbackLine },
 		],
 	},
 	{
