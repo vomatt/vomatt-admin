@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { ConfirmAction } from '@/components/admin/ConfirmAction';
+import { EntityLink } from '@/components/admin/EntityLink';
 import { PageHeader } from '@/components/admin/PageHeader';
 import { PollStatusBadge } from '@/components/admin/PollStatusBadge';
 import { AUDIENCE_LABELS, VOTER_VISIBILITY_LABELS } from '@/components/polls/labels';
@@ -10,29 +11,17 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { adminFetch } from '@/lib/api/admin';
-import { ApiError } from '@/lib/api/client';
 import { closePoll, deletePoll, restorePoll } from '@/lib/api/services/polls';
+import { findPoll } from '@/lib/entity-name';
 import { formatDateTime, pollStatus } from '@/lib/format';
-import { AdminPoll } from '@/types';
 
 export const metadata: Metadata = { title: 'Poll' };
 
 type Detail = [term: string, value: React.ReactNode];
 
-async function getPoll(pollId: string) {
-	try {
-		return await adminFetch<AdminPoll>(`/admin/votes/${encodeURIComponent(pollId)}`);
-	} catch (error) {
-		// 400: not a UUID
-		if (error instanceof ApiError && (error.statusCode === 404 || error.statusCode === 400)) notFound();
-		throw error;
-	}
-}
-
 export default async function PollPage({ params }: PageProps<'/polls/[pollId]'>) {
 	const { pollId } = await params;
-	const { vote: poll, deletedAt, creatorEmail, creatorActive } = await getPoll(pollId);
+	const { vote: poll, deletedAt, creatorEmail, creatorActive } = (await findPoll(pollId)) ?? notFound();
 	const status = pollStatus(poll);
 	const deleted = deletedAt !== null;
 	// Same rule as the owner's Close; public and scheduled polls can only be deleted
@@ -44,11 +33,13 @@ export default async function PollPage({ params }: PageProps<'/polls/[pollId]'>)
 		[
 			'Creator',
 			<span key="creator" className="flex flex-wrap items-center gap-2">
-				<Link href={`/users/${poll.creatorId}`} className="hover:underline">
+				<EntityLink kind="user" id={poll.creatorId}>
 					{poll.creatorUsername}
-				</Link>
+				</EntityLink>
 				{creatorEmail ? <span className="text-muted-foreground">{creatorEmail}</span> : null}
-				{creatorActive ? null : <Badge variant="destructive">Suspended</Badge>}
+				{creatorActive ? null : <Badge variant="destructive" dot>
+						Suspended
+					</Badge>}
 			</span>,
 		],
 		['Audience', AUDIENCE_LABELS[poll.audience]],
@@ -90,6 +81,7 @@ export default async function PollPage({ params }: PageProps<'/polls/[pollId]'>)
 					</span>
 				}
 				description={poll.description}
+				parent={{ href: '/polls', label: 'Polls' }}
 			>
 				<Button variant="outline" size="sm" asChild>
 					<Link href={`/comments?voteId=${poll.id}`}>Comments ({poll.commentCount})</Link>

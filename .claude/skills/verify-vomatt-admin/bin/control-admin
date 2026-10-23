@@ -90,14 +90,31 @@ cmd_doctor() {
 	[ $ok = 1 ]
 }
 
-cmd_otp() { # Prints the 6-digit code the API stored for <email>; emails are never sent locally
+# The admin console's sign-in and the public one keep their OTPs in separate Redis namespaces
+OTP_NAMESPACES=(otp:admin-email otp:email)
+
+# A JSON string field of an OTP record, e.g. otp_field code '{"code":"123456",...}'
+otp_field() { sed -nE "s/.*\"$1\" *: *\"([^\"]*)\".*/\1/p" <<<"$2"; }
+
+cmd_otp() { # Prints the newest 6-digit code the API stored for <email>, admin or public sign-in; emails are never sent locally
 	[ -n "${1:-}" ] || die "usage: otp <email>"
-	compose exec -T redis redis-cli GET "otp:email:$1" | grep -oE '[0-9]{6}' | head -1 || die "no OTP stored for $1"
+	local ns record at code="" code_at=""
+	for ns in "${OTP_NAMESPACES[@]}"; do
+		record="$(compose exec -T redis redis-cli GET "$ns:$1")" || die "cannot read $ns:$1 from this stack's Redis (run doctor)"
+		[ -n "$record" ] || continue
+		# createdAt is ISO-8601 UTC, so whole seconds compare as text; the fraction's width varies, so drop it
+		at="$(otp_field createdAt "$record")"; at="${at%%.*}"
+		if [ -z "$code" ] || [[ "$at" > "$code_at" ]]; then code="$(otp_field code "$record")"; code_at="$at"; fi
+	done
+	[ -n "$code" ] || die "no OTP stored for $1"
+	echo "$code"
 }
 
 cmd_otp_reset() { # Clears the 180 s resend cooldown and any pending code, in this stack's Redis only
 	[ -n "${1:-}" ] || die "usage: otp-reset <email>"
-	compose exec -T redis redis-cli DEL "otp:email:$1" "otp:email:cooldown:$1" >/dev/null
+	local ns keys=()
+	for ns in "${OTP_NAMESPACES[@]}"; do keys+=("$ns:$1" "$ns:cooldown:$1"); done
+	compose exec -T redis redis-cli DEL "${keys[@]}" >/dev/null
 }
 
 cmd_down() { # Removes what up started; keeps the evidence

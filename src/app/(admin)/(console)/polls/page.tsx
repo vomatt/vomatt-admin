@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { EmptyRow } from '@/components/admin/EmptyRow';
+import { EntityLink } from '@/components/admin/EntityLink';
+import { FilterChip } from '@/components/admin/FilterChip';
 import { FilterInput, Filters, FilterSelect } from '@/components/admin/Filters';
 import { PageHeader } from '@/components/admin/PageHeader';
 import { Pagination } from '@/components/admin/Pagination';
@@ -9,6 +11,7 @@ import { PollStatusBadge } from '@/components/admin/PollStatusBadge';
 import { AUDIENCE_LABELS } from '@/components/polls/labels';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { adminFetch, withQuery } from '@/lib/api/admin';
+import { entityName } from '@/lib/entity-name';
 import { formatDateTime, pollStatus } from '@/lib/format';
 import { readPage, readParam } from '@/lib/search-params';
 import { AdminPoll, Page } from '@/types';
@@ -24,7 +27,10 @@ export default async function PollsPage({ searchParams }: PageProps<'/polls'>) {
 		deleted: readParam(params, 'deleted'),
 		creatorId: readParam(params, 'creatorId'),
 	};
-	const polls = await adminFetch<Page<AdminPoll>>(withQuery('/admin/votes', { ...filters, page: readPage(params) }));
+	const [polls, creatorName] = await Promise.all([
+		adminFetch<Page<AdminPoll>>(withQuery('/admin/votes', { ...filters, page: readPage(params) })),
+		filters.creatorId ? entityName('user', filters.creatorId) : null,
+	]);
 
 	return (
 		<main className="flex flex-col gap-6 p-8">
@@ -47,12 +53,15 @@ export default async function PollsPage({ searchParams }: PageProps<'/polls'>) {
 				{filters.creatorId ? <input type="hidden" name="creatorId" value={filters.creatorId} /> : null}
 			</Filters>
 			{filters.creatorId ? (
-				<p className="text-sm text-muted-foreground">
-					Showing polls by one creator.{' '}
-					<Link href="/polls" className="underline">
-						Show all
-					</Link>
-				</p>
+				<FilterChip
+					label="Creator"
+					kind="user"
+					id={filters.creatorId}
+					name={creatorName}
+					pathname="/polls"
+					params={filters}
+					param="creatorId"
+				/>
 			) : null}
 
 			<div className="rounded-md border">
@@ -78,9 +87,9 @@ export default async function PollsPage({ searchParams }: PageProps<'/polls'>) {
 										</Link>
 									</TableCell>
 									<TableCell>
-										<Link href={`/users/${vote.creatorId}`} className="hover:underline">
+										<EntityLink kind="user" id={vote.creatorId}>
 											{vote.creatorUsername}
-										</Link>
+										</EntityLink>
 									</TableCell>
 									<TableCell>
 										<PollStatusBadge status={pollStatus(vote)} deleted={deletedAt !== null} />

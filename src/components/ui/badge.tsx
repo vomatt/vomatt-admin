@@ -18,6 +18,14 @@ const badgeVariants = cva(
 				ghost:
 					'hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50',
 				link: 'text-primary underline-offset-4 hover:underline',
+				success: 'bg-tone-success-bg text-tone-success',
+				info: 'bg-tone-info-bg text-tone-info',
+				warning: 'bg-tone-warning-bg text-tone-warning',
+				neutral: 'bg-muted text-muted-foreground',
+			},
+			// A status dot in the text colour, so the state doesn't rest on hue alone
+			dot: {
+				true: 'before:size-1.5 before:shrink-0 before:rounded-full before:bg-current',
 			},
 		},
 		defaultVariants: {
@@ -29,6 +37,7 @@ const badgeVariants = cva(
 function Badge({
 	className,
 	variant = 'default',
+	dot,
 	asChild = false,
 	...props
 }: React.ComponentProps<'span'> &
@@ -39,7 +48,7 @@ function Badge({
 		<Comp
 			data-slot="badge"
 			data-variant={variant}
-			className={cn(badgeVariants({ variant }), className)}
+			className={cn(badgeVariants({ variant, dot }), className)}
 			{...props}
 		/>
 	);

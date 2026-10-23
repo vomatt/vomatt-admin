@@ -21,6 +21,8 @@ import {
 	Sidebar,
 	SidebarContent,
 	SidebarFooter,
+	SidebarGroup,
+	SidebarGroupLabel,
 	SidebarHeader,
 	SidebarMenu,
 	SidebarMenuButton,
@@ -33,13 +35,23 @@ import { decodeToken, getTokens } from '@/lib/api/auth';
 import { signout } from '@/lib/api/services/auth';
 
 const NAV = [
-	{ href: '/', label: 'Overview', icon: RiBarChartBoxLine },
-	{ href: '/users', label: 'Users', icon: RiGroupLine },
-	{ href: '/polls', label: 'Polls', icon: RiSurveyLine },
-	{ href: '/comments', label: 'Comments', icon: RiChat3Line },
-	{ href: '/audit-logs', label: 'Audit log', icon: RiFileList3Line },
-	{ href: '/tags', label: 'Tags', icon: RiPriceTag3Line },
-	{ href: '/lookups', label: 'Lookups', icon: RiNodeTree },
+	{ items: [{ href: '/', label: 'Overview', icon: RiBarChartBoxLine }] },
+	{ label: 'People', items: [{ href: '/users', label: 'Users', icon: RiGroupLine }] },
+	{
+		label: 'Content',
+		items: [
+			{ href: '/polls', label: 'Polls', icon: RiSurveyLine },
+			{ href: '/comments', label: 'Comments', icon: RiChat3Line },
+		],
+	},
+	{
+		label: 'Settings',
+		items: [
+			{ href: '/tags', label: 'Tags', icon: RiPriceTag3Line },
+			{ href: '/lookups', label: 'Lookups', icon: RiNodeTree },
+		],
+	},
+	{ label: 'System', items: [{ href: '/audit-logs', label: 'Audit log', icon: RiFileList3Line }] },
 ];
 
 // Signed-in views; the proxy has already checked the admin session
@@ -58,16 +70,21 @@ export default async function ConsoleLayout({ children }: { children: ReactNode 
 						<span className="sr-only">Vomatt Admin home</span>
 					</Link>
 				</SidebarHeader>
-				<SidebarContent className="p-2">
-					<SidebarMenu>
-						{NAV.map(({ href, label, icon: Icon }) => (
-							<NavLink key={href} href={href}>
-								<Icon aria-hidden />
-								{label}
-							</NavLink>
-						))}
-					</SidebarMenu>
-					<SidebarSeparator className="mx-0" />
+				<SidebarContent className="gap-0 p-2">
+					{NAV.map(({ label, items }) => (
+						<SidebarGroup key={items[0].href} className="p-0 pb-2">
+							{label ? <SidebarGroupLabel>{label}</SidebarGroupLabel> : null}
+							<SidebarMenu>
+								{items.map(({ href, label, icon: Icon }) => (
+									<NavLink key={href} href={href}>
+										<Icon aria-hidden />
+										{label}
+									</NavLink>
+								))}
+							</SidebarMenu>
+						</SidebarGroup>
+					))}
+					<SidebarSeparator className="mx-0 mb-2" />
 					<SidebarMenu>
 						{/* No prefetch: the Studio has its own root layout, so it loads as a full page */}
 						<NavLink href="/sanity" prefetch={false}>

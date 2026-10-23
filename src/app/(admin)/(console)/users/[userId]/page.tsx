@@ -11,22 +11,12 @@ import { SuspendDialog } from '@/components/users/SuspendDialog';
 import { UnlockLoginDialog } from '@/components/users/UnlockLoginDialog';
 import { RoleBadges, UserStatusBadge } from '@/components/users/UserBadges';
 import { adminFetch } from '@/lib/api/admin';
-import { ApiError } from '@/lib/api/client';
 import { unsuspendUser } from '@/lib/api/services/users';
+import { findUser } from '@/lib/entity-name';
 import { formatDateTime } from '@/lib/format';
-import { AdminUserDetail, AdminUserOptions } from '@/types';
+import { AdminUserOptions } from '@/types';
 
 export const metadata: Metadata = { title: 'User' };
-
-async function getUser(userId: string) {
-	try {
-		return await adminFetch<AdminUserDetail>(`/admin/users/${encodeURIComponent(userId)}`);
-	} catch (error) {
-		// 400: not a UUID
-		if (error instanceof ApiError && (error.statusCode === 404 || error.statusCode === 400)) notFound();
-		throw error;
-	}
-}
 
 // Only the unlock dialog needs these; a failure must not take the whole page down.
 async function getOptions() {
@@ -41,7 +31,8 @@ async function getOptions() {
 
 export default async function UserPage({ params }: PageProps<'/users/[userId]'>) {
 	const { userId } = await params;
-	const [user, options] = await Promise.all([getUser(userId), getOptions()]);
+	const [user, options] = await Promise.all([findUser(userId), getOptions()]);
+	if (!user) notFound();
 
 	const details: [string, React.ReactNode][] = [
 		['Display name', user.displayName ?? '—'],
@@ -74,6 +65,7 @@ export default async function UserPage({ params }: PageProps<'/users/[userId]'>)
 					</span>
 				}
 				description={<RoleBadges roles={user.roles} />}
+				parent={{ href: '/users', label: 'Users' }}
 			>
 				<Button variant="outline" size="sm" asChild>
 					<Link href={`/audit-logs?resourceId=${user.id}`}>Audit log</Link>
@@ -124,7 +116,7 @@ export default async function UserPage({ params }: PageProps<'/users/[userId]'>)
 							{activity.map(({ label, count, href }) => (
 								<li key={label} className="flex items-center justify-between gap-4">
 									{href ? (
-										<Link href={href} className="hover:underline">
+										<Link href={href} className="text-link hover:underline">
 											{label}
 										</Link>
 									) : (
