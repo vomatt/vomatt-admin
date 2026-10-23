@@ -43,7 +43,7 @@ $B click 'button[type=submit]'                        # "Send code"
 $B wait 'input[name=code]'
 $B fill 'input[name=code]' "$($C otp verify-admin@vomatt.test)"
 $B click 'button[type=submit]'                        # "Sign in"
-$B wait 'nav'; $B url                                 # http://localhost:3033/tags
+$B wait '[data-slot=sidebar]'; $B url                  # http://localhost:3033/tags
 ```
 
 Handles: form fields by `name` (`email`, `code`, `name`, `slug`, `description`, `displayOrder`, `lookupType`, `lookupKey`, `lookupValue`, `seq`, `frontendUsing`), buttons by text (`button:has-text("Add tag")`), rows by content (`li:has-text("Verify tag")`), errors by `p[role=alert]`. `$B snapshot -i` lists the interactive elements with `@e` refs when a selector is ambiguous. Read an error with `$B js "document.querySelector('p[role=alert]')?.textContent"`.
@@ -78,11 +78,12 @@ Kills only the `next dev` it started (by pid), runs `docker compose down -v` for
 
 ## Helpers
 
-`bin/control-admin up|doctor|otp <email>|otp-reset <email>|sql <query>|down`, shown above. `otp-reset` clears the API's 180-second resend cooldown and pending code for an email in this stack's Redis, for when a recipe needs a second sign-in. `compose.verify.yml` is the port and image override layered on `../vomatt-api/docker-compose.yml`.
+`bin/control-admin up|doctor|otp <email>|otp-reset <email>|sql <query>|down`, shown above. `otp` and `otp-reset` cover both the admin console's sign-in (`otp:admin-email:*`) and the public one (`otp:email:*`). `otp-reset` clears the API's 180-second resend cooldown and pending code for an email in this stack's Redis, for when a recipe needs a second sign-in. `compose.verify.yml` is the port and image override layered on `../vomatt-api/docker-compose.yml`.
 
 ## Gotchas
 
 - The Next dev-tools badge sits on top of `Sign out` (bottom left), so the click times out. Remove the overlay first: `$B js "document.querySelectorAll('nextjs-portal').forEach(e => e.remove())"`.
+- `Send code` failing with `common.unauthorized` (401 on `/api/auth/admin/send-otp` in `next.log`) means the API image predates the admin sign-in endpoints: `$C down`, then `REBUILD=1 $C up`.
 - A second `Send code` for the same email within 180 s is refused (`auth.otp.resend_cooldown`) and the code field never appears. Stay signed in, or run `$C otp-reset <email>` first.
 - The 5th wrong code locks OTP sign-in for the caller's IP (`auth.otp.too_many_attempts`).
 - API error messages come back in Chinese by default (`請等 57 秒後再重新發送`); match on the alert's presence or on `errorCode` in `next.log`, not on the English text.

@@ -90,14 +90,24 @@ cmd_doctor() {
 	[ $ok = 1 ]
 }
 
-cmd_otp() { # Prints the 6-digit code the API stored for <email>; emails are never sent locally
+# The admin console's sign-in and the public one keep their OTPs in separate Redis namespaces
+OTP_NAMESPACES=(otp:admin-email otp:email)
+
+cmd_otp() { # Prints the 6-digit code the API stored for <email>, admin sign-in first; emails are never sent locally
 	[ -n "${1:-}" ] || die "usage: otp <email>"
-	compose exec -T redis redis-cli GET "otp:email:$1" | grep -oE '[0-9]{6}' | head -1 || die "no OTP stored for $1"
+	local ns
+	for ns in "${OTP_NAMESPACES[@]}"; do
+		# The record is JSON; take the code field, not any other 6-digit run such as the timestamp's
+		compose exec -T redis redis-cli GET "$ns:$1" | grep -oE '"code" *: *"[0-9]{6}"' | grep -oE '[0-9]{6}' && return
+	done
+	die "no OTP stored for $1"
 }
 
 cmd_otp_reset() { # Clears the 180 s resend cooldown and any pending code, in this stack's Redis only
 	[ -n "${1:-}" ] || die "usage: otp-reset <email>"
-	compose exec -T redis redis-cli DEL "otp:email:$1" "otp:email:cooldown:$1" >/dev/null
+	local ns keys=()
+	for ns in "${OTP_NAMESPACES[@]}"; do keys+=("$ns:$1" "$ns:cooldown:$1"); done
+	compose exec -T redis redis-cli DEL "${keys[@]}" >/dev/null
 }
 
 cmd_down() { # Removes what up started; keeps the evidence

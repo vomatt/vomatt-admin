@@ -25,7 +25,7 @@ Preconditions:
 
 - **Redirect.** Open a protected page. Run `$B goto http://localhost:3033/tags` then `$B url`. The URL is `http://localhost:3033/login?redirect=%2Ftags` and `$B snapshot -i` shows textbox `Email` and button `Send code`.
 - **Request code.** Run `$B fill 'input[name=email]' verify-admin@vomatt.test` and `$B click 'button[type=submit]'`. `$B wait 'input[name=code]'` succeeds and the email field is read-only.
-- **Sign in.** Run `$B fill 'input[name=code]' "$($C otp verify-admin@vomatt.test)"` and `$B click 'button[type=submit]'`. After `$B wait 'nav'` (the console sidebar; the login page has an `h1` too), `$B url` is `http://localhost:3033/tags`, and `$B cookies` lists `accessToken` and `refreshToken`.
+- **Sign in.** Run `$B fill 'input[name=code]' "$($C otp verify-admin@vomatt.test)"` and `$B click 'button[type=submit]'`. After `$B wait '[data-slot=sidebar]'` (the console sidebar, which the login page lacks), `$B url` is `http://localhost:3033/tags`, and `$B cookies` lists `accessToken` and `refreshToken`.
 - **Already signed in.** Run `$B goto http://localhost:3033/login` then `$B url`. The URL is `http://localhost:3033/`.
 - **Sign out.** Run `$B js "document.querySelectorAll('nextjs-portal').forEach(e => e.remove())"` then `$B click 'button:has-text("Sign out")'`. `$B url` is `http://localhost:3033/login` and `$B cookies` has no `accessToken`/`refreshToken`.
 - **Non-admin refused.** Signed out, run `$B fill 'input[name=email]' verify-user@vomatt.test` and `$B click 'button[type=submit]'`. `$B wait 'p[role=alert]'` succeeds, the alert reads `This account does not have admin access.`, no code field appears, and `$C otp verify-user@vomatt.test` exits non-zero (no code was issued).
