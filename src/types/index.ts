@@ -65,11 +65,9 @@ export interface AdminUser {
 	id: string;
 	username: string;
 	displayName: string | null;
-	firstName: string | null;
-	lastName: string | null;
-	/** `yyyy-MM-dd`, shown whatever the user's visibility settings. */
-	birthday: string | null;
+	/** Masked in the list (`a***@example.com`); the detail has the full value. */
 	email: string | null;
+	/** Masked in the list (`+88****78`); the detail has the full value. */
 	phoneNumber: string | null;
 	authMethod: string | null;
 	roles: string[];
@@ -78,8 +76,12 @@ export interface AdminUser {
 	createdAt: string;
 }
 
-/** `AdminUserDetail`: the list row plus points and activity counts. */
+/** `AdminUserDetail`: the list row unmasked, plus names, birthday, points and activity counts. */
 export interface AdminUserDetail extends AdminUser {
+	firstName: string | null;
+	lastName: string | null;
+	/** `yyyy-MM-dd`, shown whatever the user's visibility settings. */
+	birthday: string | null;
 	points: number;
 	membershipLevel: string;
 	pollCount: number;
@@ -162,7 +164,7 @@ export interface AdminComment {
 	updatedAt: string;
 }
 
-/** `AuditLogResponse`. `username` holds the actor's email at the time. */
+/** `AuditLogResponse`. `username` is the actor's username at the time. */
 export interface AuditLog {
 	id: string;
 	userId: string | null;

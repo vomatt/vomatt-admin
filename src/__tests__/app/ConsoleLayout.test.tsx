@@ -1,6 +1,7 @@
 jest.mock('next/headers', () => ({ cookies: async () => ({ get: () => undefined }) }));
 jest.mock('next/navigation', () => ({ usePathname: () => '/comments' }));
-jest.mock('@/lib/api/auth', () => ({ getTokens: async () => null, decodeToken: jest.fn() }));
+jest.mock('@/lib/api/admin', () => ({ adminFetch: async () => ({ email: 'admin@example.com' }) }));
+jest.mock('@/lib/api/client', () => ({ ApiError: class ApiError extends Error {} }));
 jest.mock('@/lib/api/services/auth', () => ({ signout: jest.fn() }));
 jest.mock('@/components/admin/ThemeSwitcher', () => ({ ThemeSwitcher: () => null }));
 
@@ -25,6 +26,12 @@ describe('ConsoleLayout sidebar', () => {
 		expect(group('Content').getAllByRole('link').map((link) => link.textContent)).toEqual(['Polls', 'Comments']);
 		expect(group('Settings').getAllByRole('link').map((link) => link.textContent)).toEqual(['Tags', 'Lookups']);
 		expect(group('System').getByRole('link', { name: 'Audit log' })).toBeInTheDocument();
+	});
+
+	it('shows the email read from the API', async () => {
+		render(await ConsoleLayout({ children: null }));
+
+		expect(screen.getByText('admin@example.com')).toBeInTheDocument();
 	});
 
 	it('marks the current section', async () => {
