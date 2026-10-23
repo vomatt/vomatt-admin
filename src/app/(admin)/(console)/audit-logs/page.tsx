@@ -10,14 +10,13 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { adminFetch, withQuery } from '@/lib/api/admin';
 import { AUDIT_RESOURCE_KINDS } from '@/lib/entities';
-import { entityName } from '@/lib/entity-name';
+import { entityName, findUser } from '@/lib/entity-name';
 import { formatDateTime } from '@/lib/format';
 import { readPage, readParam } from '@/lib/search-params';
 import { AuditLog, Page } from '@/types';
 
 export const metadata: Metadata = { title: 'Audit log' };
 
-/** `<input type="datetime-local">` gives a Taipei wall time without an offset. */
 // The values vomatt-api's @Auditable annotations record; the API doesn't publish the set
 const ACTIONS = [
 	'ADD_MEMBERS', 'BLOCK', 'CREATE', 'DEACTIVATE', 'DELETE', 'FORCE_CLOSE', 'FORCE_DELETE', 'INVITE', 'LIKE',
@@ -26,12 +25,27 @@ const ACTIONS = [
 ];
 const RESOURCE_TYPES: Record<string, string> = { USER: 'User', VOTE: 'Poll', COMMENT: 'Comment', GROUP: 'Group' };
 
-const ACTION_OPTIONS = Object.fromEntries(
-	ACTIONS.map((action) => [action, action.charAt(0) + action.slice(1).toLowerCase().replaceAll('_', ' ')])
-);
+function actionLabel(action: string) {
+	return action.charAt(0) + action.slice(1).toLowerCase().replaceAll('_', ' ');
+}
 
+const ACTION_OPTIONS = Object.fromEntries(ACTIONS.map((action) => [action, actionLabel(action)]));
+
+/** Keeps a value missing from the list (an action the API added since, an old link) selectable, so a submit keeps it. */
+function withCurrent(options: Record<string, string>, current: string, label: (value: string) => string) {
+	return current && !(current in options) ? { ...options, [current]: label(current) } : options;
+}
+
+/** `<input type="datetime-local">` gives a Taipei wall time without an offset. */
 function toInstant(local: string) {
 	return local ? `${local}:00+08:00` : undefined;
+}
+
+/** The actor as the rows name them (their email), so the chip matches the Actor column. */
+async function actorLabel(userId: string, firstRow: AuditLog | undefined) {
+	if (firstRow?.username) return firstRow.username;
+	const user = await findUser(userId);
+	return user ? (user.email ?? user.username) : null;
 }
 
 export default async function AuditLogsPage({ searchParams }: PageProps<'/audit-logs'>) {
@@ -55,7 +69,7 @@ export default async function AuditLogsPage({ searchParams }: PageProps<'/audit-
 	// A resourceId filter carries no type; the rows it matched do
 	const resourceKind = AUDIT_RESOURCE_KINDS[filters.resourceType || (logs.content[0]?.resourceType ?? '')];
 	const [actorName, resourceName] = await Promise.all([
-		filters.userId ? entityName('user', filters.userId) : null,
+		filters.userId ? actorLabel(filters.userId, logs.content[0]) : null,
 		filters.resourceId && resourceKind ? entityName(resourceKind, filters.resourceId) : null,
 	]);
 
@@ -66,12 +80,17 @@ export default async function AuditLogsPage({ searchParams }: PageProps<'/audit-
 				description="Newest first. Entries are written asynchronously and may appear a moment late. Times are Taipei time."
 			/>
 			<Filters pathname="/audit-logs">
-				<FilterSelect name="action" label="Action" defaultValue={filters.action} options={ACTION_OPTIONS} />
+				<FilterSelect
+					name="action"
+					label="Action"
+					defaultValue={filters.action}
+					options={withCurrent(ACTION_OPTIONS, filters.action, actionLabel)}
+				/>
 				<FilterSelect
 					name="resourceType"
 					label="Resource type"
 					defaultValue={filters.resourceType}
-					options={RESOURCE_TYPES}
+					options={withCurrent(RESOURCE_TYPES, filters.resourceType, (type) => type)}
 				/>
 				{filters.resourceId && resourceKind ? (
 					<input type="hidden" name="resourceId" value={filters.resourceId} />

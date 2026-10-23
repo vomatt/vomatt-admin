@@ -1,8 +1,8 @@
 /* Mirrors vomatt-web src/styles/global.css; change both. Admin differences, on
-   purpose: the :root/.dark base tokens (surface and field grays included) and
-   --radius use shadcn's stone palette (keep them when syncing), the tone, link and
-   nav-indicator tokens are admin-only, and the data-* variants also match Radix
-   data-state. */
+   purpose: the :root/.dark base tokens, --primary-hover, --border-strong,
+   --surface-soft, --field, the --sidebar-* tokens and --radius use shadcn's stone
+   palette (keep them when syncing), the tone, link and nav-indicator tokens are
+   admin-only, and the data-* variants also match Radix data-state. */
 @import 'tailwindcss';
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";

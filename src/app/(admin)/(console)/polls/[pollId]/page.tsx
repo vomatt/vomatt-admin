@@ -11,29 +11,17 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { adminFetch } from '@/lib/api/admin';
-import { ApiError } from '@/lib/api/client';
 import { closePoll, deletePoll, restorePoll } from '@/lib/api/services/polls';
+import { findPoll } from '@/lib/entity-name';
 import { formatDateTime, pollStatus } from '@/lib/format';
-import { AdminPoll } from '@/types';
 
 export const metadata: Metadata = { title: 'Poll' };
 
 type Detail = [term: string, value: React.ReactNode];
 
-async function getPoll(pollId: string) {
-	try {
-		return await adminFetch<AdminPoll>(`/admin/votes/${encodeURIComponent(pollId)}`);
-	} catch (error) {
-		// 400: not a UUID
-		if (error instanceof ApiError && (error.statusCode === 404 || error.statusCode === 400)) notFound();
-		throw error;
-	}
-}
-
 export default async function PollPage({ params }: PageProps<'/polls/[pollId]'>) {
 	const { pollId } = await params;
-	const { vote: poll, deletedAt, creatorEmail, creatorActive } = await getPoll(pollId);
+	const { vote: poll, deletedAt, creatorEmail, creatorActive } = (await findPoll(pollId)) ?? notFound();
 	const status = pollStatus(poll);
 	const deleted = deletedAt !== null;
 	// Same rule as the owner's Close; public and scheduled polls can only be deleted
