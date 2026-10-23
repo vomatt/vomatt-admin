@@ -31,7 +31,7 @@ import {
 	SidebarSeparator,
 	SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { decodeToken, getTokens } from '@/lib/api/auth';
+import { adminFetch } from '@/lib/api/admin';
 import { signout } from '@/lib/api/services/auth';
 
 const NAV = [
@@ -54,12 +54,20 @@ const NAV = [
 	{ label: 'System', items: [{ href: '/audit-logs', label: 'Audit log', icon: RiFileList3Line }] },
 ];
 
+/** The access token no longer carries the email, so ask the API; the sidebar works without it. */
+async function signedInEmail() {
+	try {
+		return (await adminFetch<{ email: string | null }>('/users/me')).email ?? undefined;
+	} catch {
+		return undefined;
+	}
+}
+
 // Signed-in views; the proxy has already checked the admin session
 export default async function ConsoleLayout({ children }: { children: ReactNode }) {
 	// SidebarProvider saves the collapsed state in this cookie
 	const sidebarOpen = (await cookies()).get('sidebar_state')?.value !== 'false';
-	const accessToken = (await getTokens())?.accessToken;
-	const email = accessToken ? (await decodeToken(accessToken))?.email : undefined;
+	const email = await signedInEmail();
 
 	return (
 		<SidebarProvider defaultOpen={sidebarOpen} style={{ '--sidebar-width': '14rem' } as CSSProperties}>

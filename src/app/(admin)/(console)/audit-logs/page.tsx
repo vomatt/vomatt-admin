@@ -41,11 +41,11 @@ function toInstant(local: string) {
 	return local ? `${local}:00+08:00` : undefined;
 }
 
-/** The actor as the rows name them (their email), so the chip matches the Actor column. */
+/** The actor as the rows name them (their username), so the chip matches the Actor column. */
 async function actorLabel(userId: string, firstRow: AuditLog | undefined) {
 	if (firstRow?.username) return firstRow.username;
 	const user = await findUser(userId);
-	return user ? (user.email ?? user.username) : null;
+	return user?.username ?? null;
 }
 
 export default async function AuditLogsPage({ searchParams }: PageProps<'/audit-logs'>) {
