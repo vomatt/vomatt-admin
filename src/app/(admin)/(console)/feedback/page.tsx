@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 
 import { EmptyRow } from '@/components/admin/EmptyRow';
 import { EntityLink } from '@/components/admin/EntityLink';
@@ -8,6 +9,7 @@ import { PageHeader } from '@/components/admin/PageHeader';
 import { Pagination } from '@/components/admin/Pagination';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { adminFetch, withQuery } from '@/lib/api/admin';
+import { ApiError } from '@/lib/api/client';
 import { entityName } from '@/lib/entity-name';
 import { formatDateTime } from '@/lib/format';
 import { readPage, readParam } from '@/lib/search-params';
@@ -18,10 +20,18 @@ export const metadata: Metadata = { title: 'Feedback' };
 export default async function FeedbackPage({ searchParams }: PageProps<'/feedback'>) {
 	const params = await searchParams;
 	const filters = { userId: readParam(params, 'userId') };
-	const [feedback, senderName] = await Promise.all([
-		adminFetch<Page<AdminFeedback>>(withQuery('/admin/feedback', { ...filters, page: readPage(params) })),
-		filters.userId ? entityName('user', filters.userId) : null,
-	]);
+	let feedback: Page<AdminFeedback>;
+	let senderName: string | null;
+	try {
+		[feedback, senderName] = await Promise.all([
+			adminFetch<Page<AdminFeedback>>(withQuery('/admin/feedback', { ...filters, page: readPage(params) })),
+			filters.userId ? entityName('user', filters.userId) : null,
+		]);
+	} catch (error) {
+		// 400: userId is not a UUID
+		if (error instanceof ApiError && error.statusCode === 400) notFound();
+		throw error;
+	}
 
 	return (
 		<main className="flex flex-col gap-6 p-8">
@@ -73,7 +83,7 @@ export default async function FeedbackPage({ searchParams }: PageProps<'/feedbac
 								</TableRow>
 							))
 						) : (
-							<EmptyRow colSpan={3}>No feedback yet.</EmptyRow>
+							<EmptyRow colSpan={3}>{filters.userId ? 'No feedback from this sender.' : 'No feedback yet.'}</EmptyRow>
 						)}
 					</TableBody>
 				</Table>

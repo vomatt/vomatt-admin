@@ -6,12 +6,28 @@ jest.mock('@/lib/api/admin', () => ({
 		return query.size ? `${path}?${query}` : path;
 	},
 }));
+jest.mock('@/lib/api/client', () => ({
+	ApiError: class ApiError extends Error {
+		constructor(
+			message: string,
+			public statusCode: number
+		) {
+			super(message);
+		}
+	},
+}));
+jest.mock('next/navigation', () => ({
+	notFound: jest.fn(() => {
+		throw new Error('NEXT_NOT_FOUND');
+	}),
+}));
 jest.mock('@/lib/entity-name', () => ({ entityName: jest.fn() }));
 
 import { render } from '@testing-library/react';
 
 import FeedbackPage from '@/app/(admin)/(console)/feedback/page';
 import { adminFetch } from '@/lib/api/admin';
+import { ApiError } from '@/lib/api/client';
 import { entityName } from '@/lib/entity-name';
 import { AdminFeedback } from '@/types';
 
@@ -52,5 +68,19 @@ describe('FeedbackPage', () => {
 
 		expect(adminFetch).toHaveBeenCalledWith('/admin/feedback?userId=u1&page=1');
 		expect(entityName).toHaveBeenCalledWith('user', 'u1');
+	});
+
+	it('says the sender has none when filtered', async () => {
+		const container = await renderPage({ userId: 'u1' }, []);
+
+		expect(container.textContent).toContain('No feedback from this sender.');
+	});
+
+	it('is a 404 when the sender is not a UUID', async () => {
+		jest.mocked(adminFetch).mockRejectedValue(new ApiError('bad', 400));
+
+		await expect(
+			FeedbackPage({ searchParams: Promise.resolve({ userId: 'x' }), params: Promise.resolve({}) } as never)
+		).rejects.toThrow('NEXT_NOT_FOUND');
 	});
 });
