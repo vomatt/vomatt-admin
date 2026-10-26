@@ -50,7 +50,13 @@ export default async function CommentReportsPage({ searchParams }: PageProps<'/c
 							reports.content.map((report) => (
 								<TableRow key={report.id}>
 									<TableCell className="max-w-md whitespace-normal">
-										<p className={report.commentDeleted ? 'text-muted-foreground line-through' : undefined}>
+										<p
+												className={
+													report.commentDeleted
+														? 'text-muted-foreground line-through break-words whitespace-pre-wrap'
+														: 'break-words whitespace-pre-wrap'
+												}
+											>
 											{report.commentText}
 										</p>
 										<div className="mt-1 flex gap-1">
@@ -67,7 +73,7 @@ export default async function CommentReportsPage({ searchParams }: PageProps<'/c
 											{report.authorUsername}
 										</EntityLink>
 									</TableCell>
-									<TableCell className="max-w-xs whitespace-pre-wrap">
+									<TableCell className="max-w-xs break-words whitespace-pre-wrap">
 										<Badge variant="outline">{REASONS[report.reason] ?? report.reason}</Badge>
 										{report.note ? <p className="mt-1 text-muted-foreground">{report.note}</p> : null}
 									</TableCell>
