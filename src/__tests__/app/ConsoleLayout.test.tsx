@@ -25,7 +25,7 @@ describe('ConsoleLayout sidebar', () => {
 		render(await ConsoleLayout({ children: null }));
 
 		expect(group('People').getByRole('link', { name: 'Users' })).toBeInTheDocument();
-		expect(group('Content').getAllByRole('link').map((link) => link.textContent)).toEqual(['Polls', 'Comments', 'Feedback']);
+		expect(group('Content').getAllByRole('link').map((link) => link.textContent)).toEqual(['Polls', 'Comments', 'Reports', 'Feedback']);
 		expect(group('Settings').getAllByRole('link').map((link) => link.textContent)).toEqual(['Tags', 'Lookups']);
 		expect(group('System').getByRole('link', { name: 'Audit log' })).toBeInTheDocument();
 	});

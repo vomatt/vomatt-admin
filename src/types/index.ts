@@ -164,6 +164,23 @@ export interface AdminComment {
 	updatedAt: string;
 }
 
+/** `AdminCommentReportResponse`: a user's report, with the comment as it is now (deleted ones keep their text). */
+export interface AdminCommentReport {
+	id: string;
+	commentId: string;
+	voteId: string;
+	parentId: string | null;
+	commentText: string;
+	commentDeleted: boolean;
+	authorId: string;
+	authorUsername: string;
+	reporterId: string;
+	reporterUsername: string;
+	reason: 'SPAM' | 'HARASSMENT' | 'HATE' | 'MISINFORMATION' | 'OTHER';
+	note: string | null;
+	createdAt: string;
+}
+
 /** `AdminFeedbackResponse`: product feedback a user sent from the app. */
 export interface AdminFeedback {
 	id: string;
