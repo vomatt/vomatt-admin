@@ -135,6 +135,7 @@ export interface Poll {
 	createdAt: string;
 	participantCount: number;
 	commentCount: number;
+	shareCount: number;
 	options: PollOption[];
 	tags: Tag[];
 	audience: Audience;
