@@ -55,6 +55,7 @@ export default async function PollPage({ params }: PageProps<'/polls/[pollId]'>)
 				? `${poll.participantCount} participant${poll.participantCount === 1 ? '' : 's'}`
 				: `${poll.participantCount} of ${poll.inviteeCount} invitees`,
 		],
+		['Shares', String(poll.shareCount)],
 		...(poll.tags.length
 			? [
 					[
