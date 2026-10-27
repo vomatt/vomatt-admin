@@ -3,13 +3,17 @@
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useState, useTransition } from 'react';
 
+import { PasskeyLoginButton } from '@/components/PasskeyLoginButton';
 import { Button } from '@/components/ui/button';
 import { FieldError } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { requestOtp, verifyOtp } from '@/lib/api/services/auth';
 
-/** Two steps: email → emailed code. `redirectTo` is already a safe same-origin path. */
+/**
+ * Two steps: email → emailed code, or a passkey from the button or the email
+ * field's autofill. `redirectTo` is already a safe same-origin path.
+ */
 export function LoginForm({ redirectTo, notice }: { redirectTo: string; notice?: string }) {
 	const router = useRouter();
 	const [codeSent, setCodeSent] = useState(false);
@@ -41,7 +45,7 @@ export function LoginForm({ redirectTo, notice }: { redirectTo: string; notice?:
 			{notice ? <p className="text-sm text-muted-foreground">{notice}</p> : null}
 			<Label className="flex-col items-stretch gap-1.5">
 				Email
-				<Input type="email" name="email" required autoComplete="email" readOnly={codeSent} />
+				<Input type="email" name="email" required autoComplete="username webauthn" readOnly={codeSent} />
 			</Label>
 			{codeSent ? (
 				<Label className="flex-col items-stretch gap-1.5">
@@ -61,6 +65,9 @@ export function LoginForm({ redirectTo, notice }: { redirectTo: string; notice?:
 			<Button type="submit" loading={pending}>
 				{codeSent ? 'Sign in' : 'Send code'}
 			</Button>
+			{codeSent ? null : (
+				<PasskeyLoginButton onSignedIn={() => router.replace(redirectTo)} onError={setError} />
+			)}
 			{codeSent ? (
 				<Button
 					type="button"
