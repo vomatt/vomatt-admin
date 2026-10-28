@@ -5,6 +5,7 @@ const MESSAGES: Record<string, string> = {
 	'auth.invalid_otp': 'That code is incorrect.',
 	'auth.otp.invalid_or_expired': 'That code has expired. Request a new one.',
 	'auth.otp.too_many_attempts': 'Too many wrong codes. Request a new one.',
+	'auth.otp.daily_limit': 'Too many codes requested today. Try again tomorrow.',
 	'auth.otp.resend_cooldown': 'A code was sent recently. Wait before requesting another.',
 	'auth.email.send_failed': 'The email could not be sent. Try again later.',
 	'auth.account_banned': 'This account is suspended.',
