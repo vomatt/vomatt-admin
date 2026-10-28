@@ -2,8 +2,10 @@
 
 // Mirrors vomatt-web src/lib/api/services/auth.ts; change both. Admin
 // differences: sign-in uses the admin console endpoints (only their tokens
-// carry the admin scope), there is no check-email step (no signup here), and
-// errors are English messages.
+// carry the admin scope, so passkey sign-in verifies at the admin endpoint
+// while sharing the options one), there is no check-email step or passkey
+// registration (no signup here), errors are English messages, and the
+// credential is typed AuthenticationResponseJSON (TypeScript 6's DOM lib).
 
 import { redirect } from 'next/navigation';
 
@@ -13,9 +15,10 @@ import { ApiError, publicFetch } from '@/lib/api/client';
 import { readAuthTokens } from '@/lib/api/tokens';
 import { LOGIN_PATH } from '@/lib/login';
 
-export type AuthResult = { ok: true } | { ok: false; message: string };
+type AuthFailure = { ok: false; message: string };
+export type AuthResult = { ok: true } | AuthFailure;
 
-function toFailure(error: unknown): AuthResult {
+function toFailure(error: unknown): AuthFailure {
 	if (error instanceof ApiError) {
 		return { ok: false, message: toAuthErrorMessage(error.data?.errorCode, error.statusCode) };
 	}
@@ -49,6 +52,34 @@ export async function verifyOtp(email: string, code: string): Promise<AuthResult
 			code: code.trim(),
 		});
 		const tokens = readAuthTokens(data);
+		if (!tokens) return toFailure(null);
+		await setAuthTokens(tokens);
+		return { ok: true };
+	} catch (error) {
+		return toFailure(error);
+	}
+}
+
+/**
+ * Request options for signing in with any passkey on the device (no email
+ * needed); pass them to `PublicKeyCredential.parseRequestOptionsFromJSON`.
+ * Each call issues a challenge that lasts 5 minutes and is spent by one verify call.
+ */
+export async function getPasskeyLoginOptions(): Promise<
+	{ ok: true; options: PublicKeyCredentialRequestOptionsJSON } | AuthFailure
+> {
+	try {
+		const options = await postJson('/auth/passkey/login/options', undefined);
+		return { ok: true, options };
+	} catch (error) {
+		return toFailure(error);
+	}
+}
+
+/** Starts the session from the signed-in passkey's `credential.toJSON()`, like `verifyOtp`. */
+export async function verifyPasskeyLogin(credential: AuthenticationResponseJSON): Promise<AuthResult> {
+	try {
+		const tokens = readAuthTokens(await postJson('/auth/admin/passkey/login/verify', { credential }));
 		if (!tokens) return toFailure(null);
 		await setAuthTokens(tokens);
 		return { ok: true };

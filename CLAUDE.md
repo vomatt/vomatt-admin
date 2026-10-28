@@ -34,7 +34,7 @@ Shared conventions (auth, errors) are in `../vomatt-api/docs/frontend/` (`conven
 
 ## Code copied from vomatt-web
 
-Same stack and conventions as vomatt-web (Tailwind v4, shadcn/ui new-york/zinc, Geist, OKLCh tokens). Files copied from it start with a `Mirrors vomatt-web <path>; change both` comment: when you change one, change the other. Today: `src/styles/global.css`, `src/lib/routes.ts`, `src/lib/api/` (except `admin.ts`, `constants.ts`, `auth-errors.ts`), `src/lib/api/services/auth.ts`, `src/proxy.ts`, `src/__tests__/lib/tokens.test.ts`, `src/sanity/lib/site.ts`, `src/sanity/lib/socialIcons.tsx`, `src/components/BrandLogo.tsx`, `src/components/ui/ThemeProvider.tsx`, and the Studio (`sanity.config.ts`, `src/sanity/`) until vomatt-web drops its copy in Stage 5.
+Same stack and conventions as vomatt-web (Tailwind v4, shadcn/ui new-york/zinc, Geist, OKLCh tokens). Files copied from it start with a `Mirrors vomatt-web <path>; change both` comment: when you change one, change the other. Today: `src/styles/global.css`, `src/lib/routes.ts`, `src/lib/api/` (except `admin.ts`, `constants.ts`, `auth-errors.ts`), `src/lib/api/services/auth.ts`, `src/proxy.ts`, `src/__tests__/lib/tokens.test.ts`, `src/sanity/lib/site.ts`, `src/sanity/lib/socialIcons.tsx`, `src/components/BrandLogo.tsx`, `src/components/PasskeyLoginButton.tsx`, `src/components/ui/ThemeProvider.tsx`, and the Studio (`sanity.config.ts`, `src/sanity/`) until vomatt-web drops its copy in Stage 5.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

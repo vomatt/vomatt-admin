@@ -8,6 +8,7 @@ const MESSAGES: Record<string, string> = {
 	'auth.otp.resend_cooldown': 'A code was sent recently. Wait before requesting another.',
 	'auth.email.send_failed': 'The email could not be sent. Try again later.',
 	'auth.account_banned': 'This account is suspended.',
+	'auth.passkey.invalid': 'That passkey could not be verified. Try again.',
 };
 
 /** Maps a backend `errorCode` and HTTP status to a message the login form shows. */
