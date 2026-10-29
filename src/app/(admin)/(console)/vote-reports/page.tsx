@@ -66,9 +66,11 @@ export default async function VoteReportsPage({ searchParams }: PageProps<'/vote
 											{report.ownerUsername}
 										</EntityLink>
 									</TableCell>
-									<TableCell className="max-w-xs break-words whitespace-pre-wrap">
+									<TableCell className="max-w-xs break-words">
 										<Badge variant="outline">{REASONS[report.reason] ?? report.reason}</Badge>
-										{report.note ? <p className="mt-1 text-muted-foreground">{report.note}</p> : null}
+										{report.note ? (
+											<p className="mt-1 whitespace-pre-wrap text-muted-foreground">{report.note}</p>
+										) : null}
 									</TableCell>
 									<TableCell>
 										<EntityLink kind="user" id={report.reporterId}>
