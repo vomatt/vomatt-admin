@@ -44,7 +44,8 @@ const NAV = [
 		items: [
 			{ href: '/polls', label: 'Polls', icon: RiSurveyLine },
 			{ href: '/comments', label: 'Comments', icon: RiChat3Line },
-			{ href: '/comment-reports', label: 'Reports', icon: RiFlagLine },
+			{ href: '/comment-reports', label: 'Comment reports', icon: RiFlagLine },
+			{ href: '/vote-reports', label: 'Poll reports', icon: RiFlagLine },
 			{ href: '/feedback', label: 'Feedback', icon: RiFeedbackLine },
 		],
 	},
