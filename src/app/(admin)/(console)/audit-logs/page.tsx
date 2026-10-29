@@ -23,7 +23,7 @@ const ACTIONS = [
 	'REMOVE_MEMBER', 'RESTORE', 'RETRACT', 'SUSPEND', 'UNBLOCK', 'UNINVITE', 'UNLIKE', 'UNLOCK_LOGIN', 'UNSUSPEND',
 	'UPDATE', 'UPDATE_ROLES', 'VIEW', 'VOTE',
 ];
-const RESOURCE_TYPES: Record<string, string> = { USER: 'User', VOTE: 'Poll', COMMENT: 'Comment', COMMENT_REPORT: 'Comment report', GROUP: 'Group', FEEDBACK: 'Feedback' };
+const RESOURCE_TYPES: Record<string, string> = { USER: 'User', VOTE: 'Poll', COMMENT: 'Comment', COMMENT_REPORT: 'Comment report', VOTE_REPORT: 'Poll report', GROUP: 'Group', FEEDBACK: 'Feedback' };
 
 function actionLabel(action: string) {
 	return action.charAt(0) + action.slice(1).toLowerCase().replaceAll('_', ' ');

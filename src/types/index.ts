@@ -182,6 +182,21 @@ export interface AdminCommentReport {
 	createdAt: string;
 }
 
+/** `AdminVoteReportResponse`: a user's report, with the poll as it is now (deleted ones keep owner and title). */
+export interface AdminVoteReport {
+	id: string;
+	voteId: string;
+	voteTitle: string;
+	voteDeleted: boolean;
+	ownerId: string;
+	ownerUsername: string;
+	reporterId: string;
+	reporterUsername: string;
+	reason: 'SPAM' | 'HARASSMENT' | 'HATE' | 'MISINFORMATION' | 'OTHER';
+	note: string | null;
+	createdAt: string;
+}
+
 /** `AdminFeedbackResponse`: product feedback a user sent from the app. */
 export interface AdminFeedback {
 	id: string;
