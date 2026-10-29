@@ -9,7 +9,7 @@ npm run dev           # Start dev server (Turbopack, port 3003)
 npm run build         # Production build
 npm run lint          # ESLint (next/core-web-vitals + simple-import-sort)
 npm run test          # Jest (jsdom)
-npm run type-check    # Generate route types (PageProps), then tsc --noEmit
+npm run type-check    # Generate route types (PageProps), then tsc --noEmit with the pinned TypeScript (not `npx tsc`, which runs Sanity CLI's TypeScript 6)
 ```
 
 Tests live in `src/__tests__/` and match `**/*.test.{ts,tsx}`.
