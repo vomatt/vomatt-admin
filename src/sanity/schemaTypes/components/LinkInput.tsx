@@ -10,8 +10,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { type ObjectInputProps, type SanityClient, set, useClient } from 'sanity';
 
 import { apiVersion } from '@/sanity/env';
+import { externalUrlFromQuery } from '@/sanity/lib/link';
 import { resolveHref } from '@/sanity/lib/site';
-import { isValidUrl } from '@/sanity/lib/site';
 
 // Page types a link can point to, in picker order; linkInput's reference field uses the same list
 export const pageDocumentOrder = ['pHome', 'pGeneral'];
@@ -169,13 +169,14 @@ export const LinkInput = (props: ObjectInputProps<LinkInputValue>) => {
 				);
 			});
 
+			const url = query ? externalUrlFromQuery(query) : null;
 			const result: LinkOption[] = filteredOptions.length
 				? filteredOptions
-				: query && isValidUrl(query)
+				: url
 					? [
 							{
-								value: query,
-								payload: { pageTitle: query, route: query, isInternal: false },
+								value: url,
+								payload: { pageTitle: url, route: url, isInternal: false },
 								isNew: true,
 							},
 						]
