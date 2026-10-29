@@ -4,8 +4,7 @@
 // differences: sign-in uses the admin console endpoints (only their tokens
 // carry the admin scope, so passkey sign-in verifies at the admin endpoint
 // while sharing the options one), there is no check-email step or passkey
-// registration (no signup here), errors are English messages, and the
-// credential is typed AuthenticationResponseJSON (TypeScript 6's DOM lib).
+// registration (no signup here), and errors are English messages.
 
 import { redirect } from 'next/navigation';
 
@@ -17,6 +16,9 @@ import { LOGIN_PATH } from '@/lib/login';
 
 type AuthFailure = { ok: false; message: string };
 export type AuthResult = { ok: true } | AuthFailure;
+// What `credential.toJSON()` returns. The build checks with the pinned TypeScript 5,
+// `npx tsc` with Sanity CLI's TypeScript 6, and the DOM lib names this type differently in each
+export type PasskeyCredentialJSON = ReturnType<PublicKeyCredential['toJSON']>;
 
 function toFailure(error: unknown): AuthFailure {
 	if (error instanceof ApiError) {
@@ -77,7 +79,7 @@ export async function getPasskeyLoginOptions(): Promise<
 }
 
 /** Starts the session from the signed-in passkey's `credential.toJSON()`, like `verifyOtp`. */
-export async function verifyPasskeyLogin(credential: AuthenticationResponseJSON): Promise<AuthResult> {
+export async function verifyPasskeyLogin(credential: PasskeyCredentialJSON): Promise<AuthResult> {
 	try {
 		const tokens = readAuthTokens(await postJson('/auth/admin/passkey/login/verify', { credential }));
 		if (!tokens) return toFailure(null);

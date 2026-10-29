@@ -11,7 +11,7 @@ jest.mock('@/lib/api/auth', () => ({
 }));
 process.env.API_URL = 'https://api.example.test';
 
-import { getPasskeyLoginOptions, verifyPasskeyLogin } from '@/lib/api/services/auth';
+import { getPasskeyLoginOptions, type PasskeyCredentialJSON, verifyPasskeyLogin } from '@/lib/api/services/auth';
 
 function jsonResponse(body: unknown, status = 200) {
 	return new Response(JSON.stringify(body), {
@@ -29,7 +29,7 @@ beforeEach(() => {
 });
 
 describe('passkey sign-in', () => {
-	const credential = { id: 'c1', rawId: 'c1', type: 'public-key' } as unknown as AuthenticationResponseJSON;
+	const credential = { id: 'c1', rawId: 'c1', type: 'public-key' } as PasskeyCredentialJSON;
 
 	it('asks the shared endpoint for request options', async () => {
 		fetchMock.mockResolvedValue(jsonResponse({ success: true, data: { challenge: 'abc' } }));
