@@ -33,6 +33,15 @@ export const pGeneral = defineType({
 			},
 		},
 		{
+			title: 'Show "Last updated" date',
+			name: 'showLastUpdated',
+			type: 'boolean',
+			description:
+				'Shows when this page was last published, under its title. For policies and terms.',
+			initialValue: false,
+			hidden: ({ parent }) => parent?.layout !== 'editor',
+		},
+		{
 			name: 'pageModules',
 			type: 'array',
 			of: [
