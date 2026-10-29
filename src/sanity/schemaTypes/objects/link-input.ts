@@ -1,6 +1,7 @@
 import { LinkIcon } from '@sanity/icons/Link';
 import { defineField, defineType } from 'sanity';
 
+import { isSitePathOrAbsoluteUrl } from '@/sanity/lib/link';
 import {
 	LinkInput,
 	pageDocumentOrder,
@@ -17,7 +18,7 @@ export const linkInput = defineType({
 			options: {
 				list: [
 					{ title: 'Internal Page', value: 'internal' },
-					{ title: 'External URL', value: 'external' },
+					{ title: 'URL or path', value: 'external' },
 				],
 			},
 			initialValue: 'internal',
@@ -31,8 +32,18 @@ export const linkInput = defineType({
 		}),
 		defineField({
 			name: 'externalUrl',
-			title: 'External URL',
+			title: 'URL or path',
 			type: 'url',
+			description: 'A full URL, or a path on vomatt such as /explore',
+			validation: (Rule) => [
+				Rule.uri({
+					allowRelative: true,
+					scheme: ['http', 'https', 'mailto', 'tel'],
+				}),
+				Rule.custom<string>((url) =>
+					isSitePathOrAbsoluteUrl(url) ? true : 'Start with https:// or /'
+				),
+			],
 			hidden: ({ parent }) => parent?.linkType !== 'external',
 		}),
 	],

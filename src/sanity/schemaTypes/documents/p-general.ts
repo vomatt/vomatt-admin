@@ -1,7 +1,13 @@
 import { defineType } from 'sanity';
 
+import { validateHeroPlacement } from '@/sanity/lib/modules';
+import accordionList from '@/sanity/schemaTypes/objects/accordion-list';
+import callout from '@/sanity/schemaTypes/objects/callout';
 import carousel from '@/sanity/schemaTypes/objects/carousel';
+import editorial from '@/sanity/schemaTypes/objects/editorial';
+import featureList from '@/sanity/schemaTypes/objects/feature-list';
 import freeform from '@/sanity/schemaTypes/objects/freeform';
+import hero from '@/sanity/schemaTypes/objects/hero';
 import marquee from '@/sanity/schemaTypes/objects/marquee';
 import sharing from '@/sanity/schemaTypes/objects/sharing';
 import slug from '@/sanity/schemaTypes/objects/slug';
@@ -29,8 +35,18 @@ export const pGeneral = defineType({
 		{
 			name: 'pageModules',
 			type: 'array',
-			of: [freeform(), carousel(), marquee()],
+			of: [
+				hero(),
+				editorial(),
+				featureList(),
+				accordionList(),
+				callout(),
+				freeform(),
+				carousel(),
+				marquee(),
+			],
 			hidden: ({ parent }) => parent?.layout !== 'modules',
+			validation: (Rule) => Rule.custom<{ _type: string }[]>(validateHeroPlacement),
 		},
 		{
 			name: 'content',
