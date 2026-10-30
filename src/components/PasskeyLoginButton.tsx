@@ -1,8 +1,7 @@
 'use client';
 
 // Mirrors vomatt-web src/features/passkeys/PasskeyLoginButton.tsx; change both.
-// Admin differences: errors are English messages, the credential is cast to
-// TypeScript 6's AuthenticationResponseJSON, and support is checked here
+// Admin differences: errors are English messages, and support is checked here
 // (web's support.ts also needs the registration helpers, which admin doesn't use).
 
 import { useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } from 'react';
@@ -56,7 +55,7 @@ export function PasskeyLoginButton({ onSignedIn, onError }: PasskeyLoginButtonPr
 				signal,
 			});
 			if (!credential) return;
-			const result = await verifyPasskeyLogin((credential as PublicKeyCredential).toJSON() as AuthenticationResponseJSON);
+			const result = await verifyPasskeyLogin((credential as PublicKeyCredential).toJSON());
 			if (!result.ok) onError(result.message);
 			else onSignedIn();
 		} catch (error) {

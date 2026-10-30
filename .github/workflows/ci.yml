@@ -18,7 +18,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
-      # PageProps and the other route types come from next typegen, not from tsc
-      - run: npx next typegen
-      - run: npx tsc --noEmit
+      # next typegen writes PageProps and the other route types, then tsc checks with the
+      # pinned TypeScript, the one next build uses (npx tsc runs Sanity CLI's newer one)
+      - run: npm run type-check
       - run: npm run test
