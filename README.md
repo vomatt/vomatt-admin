@@ -23,13 +23,13 @@ npm run test
 npm run build
 ```
 
-## Sanity Function: refresh vomatt-web on publish
+## Sanity Function: refresh the public sites on publish
 
-`functions/invalidate-tags` (declared in `sanity.blueprint.ts`) is a Sync Tag Invalidate function: when published content in `urdaqaow.production` is queryable, it POSTs to vomatt-web's `/api/revalidate` so edits show up right away. One-time setup:
+`functions/invalidate-tags` (declared in `sanity.blueprint.ts`) is a Sync Tag Invalidate function: when published content in `urdaqaow.production` is queryable, it POSTs to each URL in `REVALIDATE_URLS` (vomatt-web's and vomatt-about's `/api/revalidate`) so edits show up right away. One-time setup:
 
 ```bash
 npx sanity blueprints init --stack-name production --project-id urdaqaow   # links this blueprint to a stack
-npx sanity functions env add invalidate-tags SANITY_REVALIDATE_SECRET <value>   # same value as vomatt-web's
+npx sanity functions env add invalidate-tags SANITY_REVALIDATE_SECRET <value>   # same value as vomatt-web's and vomatt-about's
 npx sanity blueprints deploy
 npx sanity functions logs invalidate-tags
 ```

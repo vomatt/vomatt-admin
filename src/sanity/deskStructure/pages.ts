@@ -1,9 +1,15 @@
+import { DesktopIcon } from '@sanity/icons/Desktop';
 import { DocumentsIcon } from '@sanity/icons/Documents';
 import { HomeIcon } from '@sanity/icons/Home';
+import { MobileDeviceIcon } from '@sanity/icons/MobileDevice';
 import { UnknownIcon } from '@sanity/icons/Unknown';
 import type { StructureBuilder } from 'sanity/structure';
 
 import { apiVersion } from '@/sanity/env';
+
+import { colorsMenu } from './colors';
+import { globalMenu } from './global';
+import { menusMenu } from './menus';
 
 const pageHome = (S: StructureBuilder) => {
 	return S.listItem()
@@ -44,26 +50,14 @@ const pageError = (S: StructureBuilder) => {
 		.icon(UnknownIcon);
 };
 
-export const pagesMenu = (S: StructureBuilder) => {
+const generalPages = (S: StructureBuilder) => {
 	return S.listItem()
-		.title('Primary Pages')
-		.id('pages')
-		.icon(DocumentsIcon)
-		.child(
-			S.list()
-				.title('Primary Pages')
-				.items([pageHome(S), pageSignUp(S), pageError(S)])
-		);
-};
-
-export const otherPagesMenu = (S: StructureBuilder) => {
-	return S.listItem()
-		.title('Other Pages')
+		.title('Pages')
 		.schemaType('pGeneral')
 		.icon(DocumentsIcon)
 		.child(
 			S.documentTypeList('pGeneral')
-				.title('Other Pages')
+				.title('Pages')
 				.filter(`_type == "pGeneral"`)
 				.apiVersion(apiVersion)
 				.child((documentId) =>
@@ -74,4 +68,34 @@ export const otherPagesMenu = (S: StructureBuilder) => {
 						['create', 'edit'].includes(intent) && type === 'pGeneral'
 				)
 		);
+};
+
+/** Everything about.vomatt.com (vomatt-about) renders: its pages, chrome and colors. */
+export const aboutSiteMenu = (S: StructureBuilder) => {
+	return S.listItem()
+		.title('About site')
+		.id('aboutSite')
+		.icon(DesktopIcon)
+		.child(
+			S.list()
+				.title('about.vomatt.com')
+				.items([
+					generalPages(S),
+					pageHome(S),
+					pageError(S),
+					S.divider(),
+					globalMenu(S),
+					menusMenu(S),
+					colorsMenu(S),
+				])
+		);
+};
+
+/** The content vomatt.com (vomatt-web) reads. */
+export const appMenu = (S: StructureBuilder) => {
+	return S.listItem()
+		.title('App')
+		.id('app')
+		.icon(MobileDeviceIcon)
+		.child(S.list().title('vomatt.com').items([pageSignUp(S)]));
 };

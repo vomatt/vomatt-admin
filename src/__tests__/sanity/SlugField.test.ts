@@ -3,36 +3,41 @@ jest.mock('@sanity/ui', () => ({}));
 
 import { getUrl } from '@/sanity/schemaTypes/components/SlugField';
 
-// The Studio runs on the admin origin, so page links use the public site's URL
+// The Studio runs on the admin origin, so page links use the public sites' URLs
 describe('SlugField getUrl', () => {
-	const originalSiteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+	const original = { ...process.env };
 
 	beforeEach(() => {
 		process.env.NEXT_PUBLIC_SITE_URL = 'https://vomatt.test';
+		process.env.NEXT_PUBLIC_ABOUT_URL = 'https://about.vomatt.test';
 	});
 
 	afterAll(() => {
-		process.env.NEXT_PUBLIC_SITE_URL = originalSiteUrl;
+		process.env = original;
 	});
 
-	it('links a general page to its slug on the public site', () => {
+	it('links a general page to its slug on the about site', () => {
 		expect(getUrl({ docType: 'pGeneral', slug: 'about' })).toBe(
-			'https://vomatt.test/about'
+			'https://about.vomatt.test/about'
 		);
 	});
 
-	it('links the homepage to the site root', () => {
-		expect(getUrl({ docType: 'pHome', slug: '/' })).toBe('https://vomatt.test/');
+	it('links the homepage to the about site root', () => {
+		expect(getUrl({ docType: 'pHome', slug: '/' })).toBe(
+			'https://about.vomatt.test/'
+		);
 	});
 
-	it('links the log-in page to /login', () => {
+	it('links the log-in page to /login on the app', () => {
 		expect(getUrl({ docType: 'pSignUp', slug: '/login' })).toBe(
 			'https://vomatt.test/login'
 		);
 	});
 
 	it('links the homepage even when its slug is empty', () => {
-		expect(getUrl({ docType: 'pHome', slug: undefined })).toBe('https://vomatt.test/');
+		expect(getUrl({ docType: 'pHome', slug: undefined })).toBe(
+			'https://about.vomatt.test/'
+		);
 	});
 
 	it('has no link before a slug is set', () => {
@@ -45,8 +50,13 @@ describe('SlugField getUrl', () => {
 		warn.mockRestore();
 	});
 
-	it('has no link when the public site URL is not set', () => {
-		delete process.env.NEXT_PUBLIC_SITE_URL;
+	it('has no link when the about site URL is not set', () => {
+		delete process.env.NEXT_PUBLIC_ABOUT_URL;
 		expect(getUrl({ docType: 'pGeneral', slug: 'about' })).toBeUndefined();
+	});
+
+	it('has no link when the app URL is not set', () => {
+		delete process.env.NEXT_PUBLIC_SITE_URL;
+		expect(getUrl({ docType: 'pSignUp', slug: '/login' })).toBeUndefined();
 	});
 });
