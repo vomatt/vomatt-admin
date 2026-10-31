@@ -1,29 +1,36 @@
 import { syncTagInvalidateEventHandler } from '@sanity/functions';
 
-// vomatt-web caches each Sanity query under its sync tags; send the changed ones
+// vomatt-web and vomatt-about cache each Sanity query under its sync tags; send the changed ones to both
 export const handler = syncTagInvalidateEventHandler(
 	async ({ event, done }) => {
-		const url = process.env.WEB_REVALIDATE_URL;
+		const urls = (process.env.REVALIDATE_URLS ?? '')
+			.split(',')
+			.map((url) => url.trim())
+			.filter(Boolean);
 		const secret = process.env.SANITY_REVALIDATE_SECRET;
 
-		try {
-			if (!url || !secret) {
-				throw new Error(
-					'WEB_REVALIDATE_URL or SANITY_REVALIDATE_SECRET is not set'
-				);
-			}
-			const res = await fetch(url, {
-				method: 'POST',
-				headers: {
-					authorization: `Bearer ${secret}`,
-					'content-type': 'application/json',
-				},
-				body: JSON.stringify({ syncTags: event.data.syncTags }),
-			});
-			if (!res.ok) throw new Error(`${url} responded ${res.status}`);
-		} catch (error) {
-			// vomatt-web keeps serving the old content until the next successful call
-			console.error('Could not revalidate vomatt-web', error);
+		if (urls.length === 0 || !secret) {
+			console.error('REVALIDATE_URLS or SANITY_REVALIDATE_SECRET is not set');
+		} else {
+			// One site being down doesn't hold back the other
+			await Promise.all(
+				urls.map(async (url) => {
+					try {
+						const res = await fetch(url, {
+							method: 'POST',
+							headers: {
+								authorization: `Bearer ${secret}`,
+								'content-type': 'application/json',
+							},
+							body: JSON.stringify({ syncTags: event.data.syncTags }),
+						});
+						if (!res.ok) throw new Error(`${url} responded ${res.status}`);
+					} catch (error) {
+						// That site keeps serving the old content until the next successful call
+						console.error(`Could not revalidate ${url}`, error);
+					}
+				})
+			);
 		}
 
 		// Always release the tags, or Live Content API clients never see the change

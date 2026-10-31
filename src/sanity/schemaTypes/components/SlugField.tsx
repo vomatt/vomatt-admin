@@ -9,7 +9,10 @@ import {
 
 import { resolveHref } from '@/sanity/lib/site';
 
-// The Studio runs on the admin app, so pages live on the public site's origin
+// These render on the about site (vomatt-about); the rest, like Log In, on the app (vomatt-web)
+const ABOUT_SITE_TYPES = ['pHome', 'pGeneral'];
+
+// The Studio runs on the admin app, so pages live on a public site's origin
 export function getUrl({
 	docType,
 	slug,
@@ -17,7 +20,9 @@ export function getUrl({
 	docType: string | undefined;
 	slug: string | undefined;
 }) {
-	const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+	const siteUrl = ABOUT_SITE_TYPES.includes(docType ?? '')
+		? process.env.NEXT_PUBLIC_ABOUT_URL
+		: process.env.NEXT_PUBLIC_SITE_URL;
 	const href = resolveHref({ documentType: docType, slug });
 	if (!siteUrl || !href) return undefined;
 
