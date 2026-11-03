@@ -96,24 +96,50 @@ OTP_NAMESPACES=(otp:admin-email otp:email)
 # A JSON string field of an OTP record, e.g. otp_field code '{"code":"123456",...}'
 otp_field() { sed -nE "s/.*\"$1\" *: *\"([^\"]*)\".*/\1/p" <<<"$2"; }
 
+# The API keys OTP records by SHA-256(email), so Redis never lists an email
+email_key() { printf %s "$1" | shasum -a 256 | cut -d' ' -f1; }
+
+# The API stores HMAC(HMAC(APP_KEY, "otp"), "<email>:<code>"), never the code. With this stack's
+# APP_KEY, trying all 10^6 codes takes about a second.
+crack_otp() { # <email> <codeHash>
+	local app_key
+	app_key="$(sed -n 's/^ *APP_KEY: *//p' "$API_DIR/docker-compose.yml")"
+	[ -n "$app_key" ] || die "APP_KEY not found in $API_DIR/docker-compose.yml"
+	APP_KEY="$app_key" node -e '
+		const { createHmac } = require("crypto");
+		const [email, hash] = process.argv.slice(1);
+		const key = createHmac("sha256", process.env.APP_KEY).update("otp").digest();
+		for (let n = 0; n < 1e6; n++) {
+			const code = String(n).padStart(6, "0");
+			if (createHmac("sha256", key).update(`${email}:${code}`).digest("hex") === hash) {
+				console.log(code);
+				process.exit(0);
+			}
+		}
+		process.exit(1);
+	' "$1" "$2"
+}
+
 cmd_otp() { # Prints the newest 6-digit code the API stored for <email>, admin or public sign-in; emails are never sent locally
 	[ -n "${1:-}" ] || die "usage: otp <email>"
-	local ns record at code="" code_at=""
+	local ns key record at hash="" hash_at=""
+	key="$(email_key "$1")"
 	for ns in "${OTP_NAMESPACES[@]}"; do
-		record="$(compose exec -T redis redis-cli GET "$ns:$1")" || die "cannot read $ns:$1 from this stack's Redis (run doctor)"
+		record="$(compose exec -T redis redis-cli GET "$ns:$key")" || die "cannot read $ns:$key from this stack's Redis (run doctor)"
 		[ -n "$record" ] || continue
 		# createdAt is ISO-8601 UTC, so whole seconds compare as text; the fraction's width varies, so drop it
 		at="$(otp_field createdAt "$record")"; at="${at%%.*}"
-		if [ -z "$code" ] || [[ "$at" > "$code_at" ]]; then code="$(otp_field code "$record")"; code_at="$at"; fi
+		if [ -z "$hash" ] || [[ "$at" > "$hash_at" ]]; then hash="$(otp_field codeHash "$record")"; hash_at="$at"; fi
 	done
-	[ -n "$code" ] || die "no OTP stored for $1"
-	echo "$code"
+	[ -n "$hash" ] || die "no OTP stored for $1"
+	crack_otp "$1" "$hash" || die "no 6-digit code matches the stored hash for $1 (APP_KEY differs from the API's?)"
 }
 
 cmd_otp_reset() { # Clears the 180 s resend cooldown and any pending code, in this stack's Redis only
 	[ -n "${1:-}" ] || die "usage: otp-reset <email>"
-	local ns keys=()
-	for ns in "${OTP_NAMESPACES[@]}"; do keys+=("$ns:$1" "$ns:cooldown:$1"); done
+	local ns key keys=()
+	key="$(email_key "$1")"
+	for ns in "${OTP_NAMESPACES[@]}"; do keys+=("$ns:$key" "$ns:cooldown:$key"); done
 	compose exec -T redis redis-cli DEL "${keys[@]}" >/dev/null
 }
 
