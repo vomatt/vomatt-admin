@@ -1,6 +1,7 @@
 import { defineField, getPublishedId, type SlugValue } from 'sanity';
 
-import { slugUniquenessQuery } from '@/sanity/lib/slug';
+import { apiVersion } from '@/sanity/env';
+import { reservedSlug, slugUniquenessQuery } from '@/sanity/lib/slug';
 import { SlugField } from '@/sanity/schemaTypes/components/SlugField';
 
 type SlugOptions = {
@@ -32,7 +33,7 @@ export default function slug({
 					slug,
 					language: document.language,
 				});
-				return getClient({ apiVersion: '2025-02-19' })
+				return getClient({ apiVersion })
 					.withConfig({ perspective: 'raw' })
 					.fetch<boolean>(query, params);
 			},
@@ -69,7 +70,10 @@ export default function slug({
 					.slice(0, 200);
 			},
 		},
-		validation: (Rule) => [Rule.required()],
+		validation: (Rule) => [
+			Rule.required(),
+			Rule.custom((value?: SlugValue) => reservedSlug(value?.current)),
+		],
 		initialValue: initialValue,
 		readOnly: ({ value, currentUser }) => {
 			if (!value) {

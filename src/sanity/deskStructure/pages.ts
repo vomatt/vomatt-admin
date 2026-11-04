@@ -13,7 +13,9 @@ import { globalMenu } from './global';
 import { menusMenu } from './menus';
 
 const localizedTemplates = (S: StructureBuilder, type: string) =>
-	languages.map((language) => S.initialValueTemplateItem(`${type}-${language.id}`));
+	languages.map((language) =>
+		S.initialValueTemplateItem(`${type}-${language.id}`)
+	);
 
 // One Homepage per language
 const pageHome = (S: StructureBuilder) => {
@@ -60,7 +62,10 @@ const pageError = (S: StructureBuilder) => {
 };
 
 // Pages saved before localization have no language and list as English
-const pagesInLanguage = (S: StructureBuilder, language: (typeof languages)[number]) => {
+const pagesInLanguage = (
+	S: StructureBuilder,
+	language: (typeof languages)[number]
+) => {
 	const template = `pGeneral-${language.id}`;
 	return S.listItem()
 		.id(template)
@@ -72,14 +77,19 @@ const pagesInLanguage = (S: StructureBuilder, language: (typeof languages)[numbe
 				.id(template)
 				.title(`Pages · ${language.title}`)
 				.schemaType('pGeneral')
-				.filter(`_type == "pGeneral" && coalesce(language, $defaultLanguage) == $language`)
+				.filter(
+					`_type == "pGeneral" && coalesce(language, $defaultLanguage) == $language`
+				)
 				.params({ language: language.id, defaultLanguage })
 				.apiVersion(apiVersion)
 				.initialValueTemplates([S.initialValueTemplateItem(template)])
+				// Only creating from this language's template: an edit intent carries no language, so
+				// claiming it here would open a page under whichever list matched first
 				.canHandleIntent(
 					(intent, { type, template: intentTemplate }) =>
 						type === 'pGeneral' &&
-						(intent === 'edit' || intentTemplate === template)
+						intent === 'create' &&
+						intentTemplate === template
 				)
 		);
 };
@@ -124,5 +134,9 @@ export const appMenu = (S: StructureBuilder) => {
 		.title('App')
 		.id('app')
 		.icon(MobileDeviceIcon)
-		.child(S.list().title('vomatt.com').items([pageSignUp(S)]));
+		.child(
+			S.list()
+				.title('vomatt.com')
+				.items([pageSignUp(S)])
+		);
 };
