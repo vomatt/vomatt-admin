@@ -19,4 +19,17 @@ const config: Config = {
 	],
 };
 
-export default createJestConfig(config);
+// groq-js (and its obug dependency) ship only ES modules, so Jest must transform them too
+const esmPackages = ['groq-js', 'obug'];
+
+export default async () => {
+	const resolved = await createJestConfig(config)();
+	return {
+		...resolved,
+		transformIgnorePatterns: resolved.transformIgnorePatterns?.map((pattern) =>
+			pattern.startsWith('/node_modules/(?!.pnpm)')
+				? pattern.replace('(?!.pnpm)', `(?!.pnpm)(?!(${esmPackages.join('|')})/)`)
+				: pattern
+		),
+	};
+};

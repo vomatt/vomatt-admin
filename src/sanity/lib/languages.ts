@@ -11,11 +11,6 @@ export const defaultLanguage: LanguageId = 'en';
 // One document per language for these types (@sanity/document-internationalization)
 export const localizedTypes = ['pGeneral', 'pHome'];
 
-// Documents created before localization have no language and are English
-export function languageOf(document: { language?: string } | undefined) {
-	return document?.language ?? defaultLanguage;
-}
-
 export function languageTitle(id: string = defaultLanguage) {
 	return languages.find((language) => language.id === id)?.title ?? id;
 }

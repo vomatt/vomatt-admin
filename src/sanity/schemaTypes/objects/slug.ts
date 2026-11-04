@@ -1,5 +1,6 @@
-import { defineField, type SlugValue } from 'sanity';
+import { defineField, getPublishedId, type SlugValue } from 'sanity';
 
+import { slugUniquenessQuery } from '@/sanity/lib/slug';
 import { SlugField } from '@/sanity/schemaTypes/components/SlugField';
 
 type SlugOptions = {
@@ -22,6 +23,19 @@ export default function slug({
 		},
 		options: {
 			source: 'title',
+			isUnique: (slug, context) => {
+				const { document, getClient } = context;
+				if (!document) throw new Error('Slug uniqueness needs the document');
+				const { query, params } = slugUniquenessQuery({
+					docType: document._type,
+					publishedId: getPublishedId(document._id),
+					slug,
+					language: document.language,
+				});
+				return getClient({ apiVersion: '2025-02-19' })
+					.withConfig({ perspective: 'raw' })
+					.fetch<boolean>(query, params);
+			},
 			maxLength: 200,
 			slugify: (input) => {
 				if (!input) return '';

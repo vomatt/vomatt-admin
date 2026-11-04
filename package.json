@@ -53,6 +53,7 @@
 		"eslint": "^9.39.5",
 		"eslint-config-next": "^16.4.0",
 		"eslint-plugin-simple-import-sort": "^10.0.0",
+		"groq-js": "^2.0.1",
 		"jest": "^30.5.2",
 		"jest-environment-jsdom": "^30.5.2",
 		"postcss": "^8.5.29",
