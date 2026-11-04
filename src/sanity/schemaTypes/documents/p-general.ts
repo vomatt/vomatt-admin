@@ -1,5 +1,6 @@
 import { defineType } from 'sanity';
 
+import { languageTitle, localizePath } from '@/sanity/lib/languages';
 import { validateHeroPlacement } from '@/sanity/lib/modules';
 import accordionList from '@/sanity/schemaTypes/objects/accordion-list';
 import callout from '@/sanity/schemaTypes/objects/callout';
@@ -70,11 +71,14 @@ export const pGeneral = defineType({
 		select: {
 			title: 'title',
 			slug: 'slug',
+			language: 'language',
 		},
-		prepare({ title = 'Untitled', slug = {} }) {
+		prepare({ title = 'Untitled', slug = {}, language }) {
 			return {
 				title,
-				subtitle: slug.current ? `/${slug.current}` : 'Missing page slug',
+				subtitle: `${languageTitle(language)} · ${
+					slug.current ? localizePath(`/${slug.current}`, language) : 'Missing page slug'
+				}`,
 			};
 		},
 	},
