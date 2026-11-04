@@ -148,6 +148,10 @@ export const decodeAssetUrl = (id: string) => {
 	};
 };
 
+// Localized singletons get per-language templates named after their type, such as pHome-zh
+const isTemplateOf = (templateId: string, type: string) =>
+	templateId === type || templateId.startsWith(`${type}-`);
+
 export const singletonPlugin = (types: string[]): PluginOptions => {
 	return {
 		name: 'singletonPlugin',
@@ -156,7 +160,8 @@ export const singletonPlugin = (types: string[]): PluginOptions => {
 			newDocumentOptions: (prev, { creationContext }) => {
 				if (creationContext.type === 'global') {
 					return prev.filter(
-						(templateItem) => !types.includes(templateItem.templateId)
+						(templateItem) =>
+							!types.some((type) => isTemplateOf(templateItem.templateId, type))
 					);
 				}
 

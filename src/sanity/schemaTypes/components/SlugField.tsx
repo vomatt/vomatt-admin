@@ -7,6 +7,7 @@ import {
 	useFormValue,
 } from 'sanity';
 
+import { localizePath } from '@/sanity/lib/languages';
 import { resolveHref } from '@/sanity/lib/site';
 
 // These render on the about site (vomatt-about); the rest, like Log In, on the app (vomatt-web)
@@ -16,17 +17,20 @@ const ABOUT_SITE_TYPES = ['pHome', 'pGeneral'];
 export function getUrl({
 	docType,
 	slug,
+	language,
 }: {
 	docType: string | undefined;
 	slug: string | undefined;
+	language?: string;
 }) {
-	const siteUrl = ABOUT_SITE_TYPES.includes(docType ?? '')
+	const isAboutSite = ABOUT_SITE_TYPES.includes(docType ?? '');
+	const siteUrl = isAboutSite
 		? process.env.NEXT_PUBLIC_ABOUT_URL
 		: process.env.NEXT_PUBLIC_SITE_URL;
 	const href = resolveHref({ documentType: docType, slug });
 	if (!siteUrl || !href) return undefined;
 
-	return new URL(href, siteUrl).toString();
+	return new URL(isAboutSite ? localizePath(href, language) : href, siteUrl).toString();
 }
 
 export const SlugField = (props: ObjectFieldProps<SlugValue>) => {
@@ -38,7 +42,11 @@ export const SlugField = (props: ObjectFieldProps<SlugValue>) => {
 	const publishedSlug = (published?.slug as SlugValue | undefined)?.current;
 
 	const pageUrl = published
-		? getUrl({ docType, slug: publishedSlug })
+		? getUrl({
+				docType,
+				slug: publishedSlug,
+				language: published.language as string | undefined,
+			})
 		: undefined;
 
 	return (

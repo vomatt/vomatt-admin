@@ -1,6 +1,7 @@
 'use client';
 
 import { colorInput } from '@sanity/color-input';
+import { documentInternationalization } from '@sanity/document-internationalization';
 import { visionTool } from '@sanity/vision';
 import { defineConfig, isDev } from 'sanity';
 import { structureTool } from 'sanity/structure';
@@ -9,6 +10,7 @@ import { noteField } from 'sanity-plugin-note-field';
 
 import { defaultDocumentNode } from '@/sanity/defaultDocumentNode';
 import { apiVersion, dataset, projectId } from '@/sanity/env';
+import { languages, localizedTypes } from '@/sanity/lib/languages';
 import { singletonPlugin } from '@/sanity/lib/utils';
 import { schemaTypes } from '@/sanity/schemaTypes';
 import { gAnnouncement } from '@/sanity/schemaTypes/singletons/g-announcement';
@@ -28,6 +30,11 @@ const commonPlugins = [
 	media(),
 	colorInput(),
 	noteField(),
+	documentInternationalization({
+		supportedLanguages: [...languages],
+		schemaTypes: localizedTypes,
+		apiVersion,
+	}),
 	singletonPlugin([
 		gFooter.name,
 		gHeader.name,
@@ -52,6 +59,9 @@ export default defineConfig({
 	plugins: isDev ? devPlugins : commonPlugins,
 	schema: {
 		types: schemaTypes,
+		// New localized documents start from a per-language template, so none lacks a language
+		templates: (prev) =>
+			prev.filter((template) => !localizedTypes.includes(template.id)),
 	},
 	tools: (prev, { currentUser }) => {
 		const isAdmin = currentUser?.roles.some(

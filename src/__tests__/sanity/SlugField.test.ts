@@ -28,6 +28,24 @@ describe('SlugField getUrl', () => {
 		);
 	});
 
+	it('links a Chinese page under /zh', () => {
+		expect(getUrl({ docType: 'pGeneral', slug: 'about', language: 'zh' })).toBe(
+			'https://about.vomatt.test/zh/about'
+		);
+	});
+
+	it('links an English page without a prefix', () => {
+		expect(getUrl({ docType: 'pGeneral', slug: 'about', language: 'en' })).toBe(
+			'https://about.vomatt.test/about'
+		);
+	});
+
+	it('links the Chinese homepage to /zh', () => {
+		expect(getUrl({ docType: 'pHome', slug: undefined, language: 'zh' })).toBe(
+			'https://about.vomatt.test/zh'
+		);
+	});
+
 	it('links the log-in page to /login on the app', () => {
 		expect(getUrl({ docType: 'pSignUp', slug: '/login' })).toBe(
 			'https://vomatt.test/login'

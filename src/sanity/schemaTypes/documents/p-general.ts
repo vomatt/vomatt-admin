@@ -1,5 +1,6 @@
 import { defineType } from 'sanity';
 
+import { languageTitle, localizePath } from '@/sanity/lib/languages';
 import { validateHeroPlacement } from '@/sanity/lib/modules';
 import accordionList from '@/sanity/schemaTypes/objects/accordion-list';
 import callout from '@/sanity/schemaTypes/objects/callout';
@@ -8,6 +9,7 @@ import editorial from '@/sanity/schemaTypes/objects/editorial';
 import featureList from '@/sanity/schemaTypes/objects/feature-list';
 import freeform from '@/sanity/schemaTypes/objects/freeform';
 import hero from '@/sanity/schemaTypes/objects/hero';
+import language from '@/sanity/schemaTypes/objects/language';
 import marquee from '@/sanity/schemaTypes/objects/marquee';
 import sharing from '@/sanity/schemaTypes/objects/sharing';
 import slug from '@/sanity/schemaTypes/objects/slug';
@@ -18,6 +20,7 @@ export const pGeneral = defineType({
 	name: 'pGeneral',
 	type: 'document',
 	fields: [
+		language(),
 		title(),
 		slug(),
 		{
@@ -68,11 +71,14 @@ export const pGeneral = defineType({
 		select: {
 			title: 'title',
 			slug: 'slug',
+			language: 'language',
 		},
-		prepare({ title = 'Untitled', slug = {} }) {
+		prepare({ title = 'Untitled', slug = {}, language }) {
 			return {
 				title,
-				subtitle: slug.current ? `/${slug.current}` : 'Missing page slug',
+				subtitle: `${languageTitle(language)} · ${
+					slug.current ? localizePath(`/${slug.current}`, language) : 'Missing page slug'
+				}`,
 			};
 		},
 	},

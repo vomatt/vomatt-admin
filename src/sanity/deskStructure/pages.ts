@@ -6,22 +6,33 @@ import { UnknownIcon } from '@sanity/icons/Unknown';
 import type { StructureBuilder } from 'sanity/structure';
 
 import { apiVersion } from '@/sanity/env';
+import { defaultLanguage, languages } from '@/sanity/lib/languages';
 
 import { colorsMenu } from './colors';
 import { globalMenu } from './global';
 import { menusMenu } from './menus';
 
+const localizedTemplates = (S: StructureBuilder, type: string) =>
+	languages.map((language) =>
+		S.initialValueTemplateItem(`${type}-${language.id}`)
+	);
+
+// One Homepage per language
 const pageHome = (S: StructureBuilder) => {
 	return S.listItem()
 		.title('Homepage')
+		.schemaType('pHome')
+		.icon(HomeIcon)
 		.child(
-			S.editor()
+			S.documentList()
 				.id('pHome')
 				.title('Homepage')
 				.schemaType('pHome')
-				.documentId('pHome')
-		)
-		.icon(HomeIcon);
+				.filter(`_type == "pHome"`)
+				.apiVersion(apiVersion)
+				.defaultOrdering([{ field: 'language', direction: 'asc' }])
+				.initialValueTemplates(localizedTemplates(S, 'pHome'))
+		);
 };
 
 const pageSignUp = (S: StructureBuilder) => {
@@ -50,23 +61,49 @@ const pageError = (S: StructureBuilder) => {
 		.icon(UnknownIcon);
 };
 
+// Pages saved before localization have no language and list as English
+const pagesInLanguage = (
+	S: StructureBuilder,
+	language: (typeof languages)[number]
+) => {
+	const template = `pGeneral-${language.id}`;
+	return S.listItem()
+		.id(template)
+		.title(language.title)
+		.schemaType('pGeneral')
+		.icon(DocumentsIcon)
+		.child(
+			S.documentList()
+				.id(template)
+				.title(`Pages · ${language.title}`)
+				.schemaType('pGeneral')
+				.filter(
+					`_type == "pGeneral" && coalesce(language, $defaultLanguage) == $language`
+				)
+				.params({ language: language.id, defaultLanguage })
+				.apiVersion(apiVersion)
+				.initialValueTemplates([S.initialValueTemplateItem(template)])
+				// Only creating from this language's template: an edit intent carries no language, so
+				// claiming it here would open a page under whichever list matched first
+				.canHandleIntent(
+					(intent, { type, template: intentTemplate }) =>
+						type === 'pGeneral' &&
+						intent === 'create' &&
+						intentTemplate === template
+				)
+		);
+};
+
 const generalPages = (S: StructureBuilder) => {
 	return S.listItem()
 		.title('Pages')
 		.schemaType('pGeneral')
 		.icon(DocumentsIcon)
 		.child(
-			S.documentTypeList('pGeneral')
+			S.list()
+				.id('pGeneral')
 				.title('Pages')
-				.filter(`_type == "pGeneral"`)
-				.apiVersion(apiVersion)
-				.child((documentId) =>
-					S.document().documentId(documentId).schemaType('pGeneral')
-				)
-				.canHandleIntent(
-					(intent, { type }) =>
-						['create', 'edit'].includes(intent) && type === 'pGeneral'
-				)
+				.items(languages.map((language) => pagesInLanguage(S, language)))
 		);
 };
 
@@ -97,5 +134,9 @@ export const appMenu = (S: StructureBuilder) => {
 		.title('App')
 		.id('app')
 		.icon(MobileDeviceIcon)
-		.child(S.list().title('vomatt.com').items([pageSignUp(S)]));
+		.child(
+			S.list()
+				.title('vomatt.com')
+				.items([pageSignUp(S)])
+		);
 };
