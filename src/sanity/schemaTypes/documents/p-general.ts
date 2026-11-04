@@ -8,6 +8,7 @@ import editorial from '@/sanity/schemaTypes/objects/editorial';
 import featureList from '@/sanity/schemaTypes/objects/feature-list';
 import freeform from '@/sanity/schemaTypes/objects/freeform';
 import hero from '@/sanity/schemaTypes/objects/hero';
+import language from '@/sanity/schemaTypes/objects/language';
 import marquee from '@/sanity/schemaTypes/objects/marquee';
 import sharing from '@/sanity/schemaTypes/objects/sharing';
 import slug from '@/sanity/schemaTypes/objects/slug';
@@ -18,6 +19,7 @@ export const pGeneral = defineType({
 	name: 'pGeneral',
 	type: 'document',
 	fields: [
+		language(),
 		title(),
 		slug(),
 		{
