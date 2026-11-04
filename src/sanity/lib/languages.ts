@@ -16,7 +16,7 @@ export function languageOf(document: { language?: string } | undefined) {
 	return document?.language ?? defaultLanguage;
 }
 
-export function languageTitle(id: string | undefined) {
+export function languageTitle(id: string = defaultLanguage) {
 	return languages.find((language) => language.id === id)?.title ?? id;
 }
 
