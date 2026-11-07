@@ -50,7 +50,7 @@ export function LoginForm({ redirectTo, notice }: { redirectTo: string; notice?:
 			{codeSent ? (
 				<>
 					<p role="status" className="text-sm text-muted-foreground">
-						If this address belongs to an admin, a code was sent. If none arrives, resend after a few minutes.
+						If this address belongs to an admin, a code was sent. If none arrives, wait a few minutes, then use “Use a different email” below to start over.
 					</p>
 					<Label className="flex-col items-stretch gap-1.5">
 						Code sent to your email
