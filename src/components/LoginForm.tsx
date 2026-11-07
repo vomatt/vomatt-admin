@@ -48,6 +48,11 @@ export function LoginForm({ redirectTo, notice }: { redirectTo: string; notice?:
 				<Input type="email" name="email" required autoComplete="username webauthn" readOnly={codeSent} />
 			</Label>
 			{codeSent ? (
+				<p role="status" className="text-sm text-muted-foreground">
+					If this address belongs to an admin, a code was sent. If none arrives, resend after a few minutes.
+				</p>
+			) : null}
+			{codeSent ? (
 				<Label className="flex-col items-stretch gap-1.5">
 					Code sent to your email
 					<Input
