@@ -9,6 +9,8 @@ const MESSAGES: Record<string, string> = {
 	'auth.otp.resend_cooldown': 'A code was sent recently. Wait before requesting another.',
 	'auth.email.send_failed': 'The email could not be sent. Try again later.',
 	'auth.account_banned': 'This account is suspended.',
+	'auth.passkey.admin_scope_required':
+		"This passkey can't sign in to the admin console. Sign in with the email code instead.",
 	'auth.passkey.invalid': 'That passkey could not be verified. Try again.',
 };
 

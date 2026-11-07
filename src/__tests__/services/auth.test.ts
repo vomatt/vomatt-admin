@@ -31,11 +31,11 @@ beforeEach(() => {
 describe('passkey sign-in', () => {
 	const credential = { id: 'c1', rawId: 'c1', type: 'public-key' } as PasskeyCredentialJSON;
 
-	it('asks the shared endpoint for request options', async () => {
+	it('asks the admin endpoint for request options', async () => {
 		fetchMock.mockResolvedValue(jsonResponse({ success: true, data: { challenge: 'abc' } }));
 
 		expect(await getPasskeyLoginOptions()).toEqual({ ok: true, options: { challenge: 'abc' } });
-		expect(fetchMock.mock.calls[0][0]).toBe('https://api.example.test/api/auth/passkey/login/options');
+		expect(fetchMock.mock.calls[0][0]).toBe('https://api.example.test/api/auth/admin/passkey/login/options');
 	});
 
 	it('verifies at the admin endpoint and stores both tokens', async () => {
@@ -54,6 +54,7 @@ describe('passkey sign-in', () => {
 	it.each([
 		[403, 'auth.admin.forbidden', 'This account does not have admin access.'],
 		[403, 'auth.account_banned', 'This account is suspended.'],
+		[403, 'auth.passkey.admin_scope_required', "This passkey can't sign in to the admin console. Sign in with the email code instead."],
 		[401, 'auth.passkey.invalid', 'That passkey could not be verified. Try again.'],
 	])('maps a %i %s without storing tokens', async (status, errorCode, message) => {
 		fetchMock.mockResolvedValue(jsonResponse({ success: false, errorCode, message: 'no' }, status));

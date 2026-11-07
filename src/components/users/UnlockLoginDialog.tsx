@@ -24,6 +24,7 @@ const TARGET_LABELS: Record<string, string> = {
 	lock: 'Lockout',
 	attempts: 'Wrong-code counters (discards the current OTP)',
 	cooldown: 'Resend cooldown',
+	daily: 'Daily OTP send count',
 };
 
 /** Clears OTP sign-in limits; nothing ticked means every channel and kind. */

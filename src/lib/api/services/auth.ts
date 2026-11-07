@@ -2,8 +2,8 @@
 
 // Mirrors vomatt-web src/lib/api/services/auth.ts; change both. Admin
 // differences: sign-in uses the admin console endpoints (only their tokens
-// carry the admin scope, so passkey sign-in verifies at the admin endpoint
-// while sharing the options one), there is no check-email step or passkey
+// carry the admin scope, and the admin passkey challenge and origin are
+// separate from the consumer ones), there is no check-email step or passkey
 // registration (no signup here), and errors are English messages.
 
 import { redirect } from 'next/navigation';
@@ -36,7 +36,7 @@ function postJson(endpoint: string, body: unknown) {
 	});
 }
 
-/** Emails a one-time code; the API refuses accounts without the admin role. */
+/** Asks for a one-time code. The API answers 200 for any email and sends it only to an active admin. */
 export async function requestOtp(email: string): Promise<AuthResult> {
 	try {
 		await postJson('/auth/admin/send-otp', { email: email.trim().toLowerCase() });
@@ -71,7 +71,7 @@ export async function getPasskeyLoginOptions(): Promise<
 	{ ok: true; options: PublicKeyCredentialRequestOptionsJSON } | AuthFailure
 > {
 	try {
-		const options = await postJson('/auth/passkey/login/options', undefined);
+		const options = await postJson('/auth/admin/passkey/login/options', undefined);
 		return { ok: true, options };
 	} catch (error) {
 		return toFailure(error);
