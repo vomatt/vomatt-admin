@@ -6,32 +6,6 @@ export const settingsGeneral = defineType({
 	type: 'document',
 	fields: [
 		{
-			name: 'comingSoon',
-			title: 'Coming soon',
-			type: 'object',
-			description:
-				'While on, the live site shows only this page. Turn it off to launch. Local development always shows the full site.',
-			options: { collapsible: true, collapsed: false },
-			fields: [
-				{
-					name: 'enabled',
-					title: 'Show coming soon page',
-					type: 'boolean',
-					initialValue: true,
-				},
-				{
-					name: 'heading',
-					type: 'string',
-					initialValue: 'Coming soon',
-				},
-				{
-					name: 'message',
-					type: 'portableTextSimple',
-					description: 'Optional text under the heading, e.g. a launch date or a link',
-				},
-			],
-		},
-		{
 			name: 'siteTitle',
 			type: 'string',
 			description: 'The name of your site, usually your company/brand name',
