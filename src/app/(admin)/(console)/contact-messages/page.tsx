@@ -3,7 +3,8 @@ import type { Metadata } from 'next';
 import { EmptyRow } from '@/components/admin/EmptyRow';
 import { PageHeader } from '@/components/admin/PageHeader';
 import { Pagination } from '@/components/admin/Pagination';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ContactMessageRow } from '@/components/contact/ContactMessageRow';
+import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { adminFetch, withQuery } from '@/lib/api/admin';
 import { formatDateTime } from '@/lib/format';
 import { readPage } from '@/lib/search-params';
@@ -38,17 +39,7 @@ export default async function ContactMessagesPage({ searchParams }: PageProps<'/
 					<TableBody>
 						{messages.content.length ? (
 							messages.content.map((item) => (
-								<TableRow key={item.id}>
-									<TableCell className="align-top text-muted-foreground">{formatDateTime(item.createdAt)}</TableCell>
-									<TableCell className="align-top">{item.name}</TableCell>
-									<TableCell className="align-top">
-										<a href={`mailto:${item.email}`} className="underline underline-offset-4">
-											{item.email}
-										</a>
-									</TableCell>
-									<TableCell className="align-top">{item.locale}</TableCell>
-									<TableCell className="max-w-xl align-top break-words whitespace-pre-wrap">{item.message}</TableCell>
-								</TableRow>
+								<ContactMessageRow key={item.id} item={item} received={formatDateTime(item.createdAt)} />
 							))
 						) : (
 							<EmptyRow colSpan={5}>No messages yet.</EmptyRow>

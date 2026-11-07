@@ -7,7 +7,7 @@ jest.mock('@/lib/api/admin', () => ({
 	},
 }));
 
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 
 import ContactMessagesPage from '@/app/(admin)/(console)/contact-messages/page';
 import { adminFetch } from '@/lib/api/admin';
@@ -50,6 +50,43 @@ describe('ContactMessagesPage', () => {
 		await renderPage({ page: '3' }, [item]);
 
 		expect(adminFetch).toHaveBeenCalledWith('/admin/contact-messages?page=3');
+	});
+
+	it('opens the full message when the row is clicked', async () => {
+		await renderPage({}, [item]);
+
+		fireEvent.click(screen.getByRole('cell', { name: 'Mei' }));
+
+		const dialog = screen.getByRole('dialog', { name: 'Message from Mei' });
+		expect(within(dialog).getByText(/how do I delete a poll/).textContent).toBe('Hello,\nhow do I delete a poll?');
+		expect(within(dialog).getByRole('link', { name: 'mei@example.com' })).toHaveAttribute('href', 'mailto:mei@example.com');
+	});
+
+	it('opens the full message from the preview button', async () => {
+		await renderPage({}, [item]);
+
+		fireEvent.click(screen.getByRole('button', { name: 'Read message from Mei' }));
+
+		expect(screen.getByRole('dialog', { name: 'Message from Mei' })).toBeInTheDocument();
+	});
+
+	it('leaves the dialog closed when the email link is clicked', async () => {
+		await renderPage({}, [item]);
+
+		fireEvent.click(screen.getByRole('link', { name: 'mei@example.com' }));
+
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+	});
+
+	it('leaves the dialog closed when the click ends a text selection', async () => {
+		await renderPage({}, [item]);
+		const cell = screen.getByRole('cell', { name: 'Mei' });
+		window.getSelection()!.selectAllChildren(cell);
+
+		fireEvent.click(cell);
+
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		window.getSelection()!.removeAllRanges();
 	});
 
 	it('says so when there are none', async () => {
