@@ -206,6 +206,16 @@ export interface AdminFeedback {
 	createdAt: string;
 }
 
+/** `AdminContactMessageResponse`: a message sent from the about site's contact form. */
+export interface AdminContactMessage {
+	id: string;
+	name: string;
+	email: string;
+	message: string;
+	locale: 'en' | 'zh';
+	createdAt: string;
+}
+
 /** `AuditLogResponse`. `username` is the actor's username at the time. */
 export interface AuditLog {
 	id: string;
