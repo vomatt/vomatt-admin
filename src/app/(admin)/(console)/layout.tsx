@@ -7,6 +7,7 @@ import {
 	RiFlagLine,
 	RiGroupLine,
 	RiLogoutBoxRLine,
+	RiMailLine,
 	RiNodeTree,
 	RiPriceTag3Line,
 	RiSurveyLine,
@@ -47,6 +48,7 @@ const NAV = [
 			{ href: '/comment-reports', label: 'Comment reports', icon: RiFlagLine },
 			{ href: '/vote-reports', label: 'Poll reports', icon: RiFlagLine },
 			{ href: '/feedback', label: 'Feedback', icon: RiFeedbackLine },
+			{ href: '/contact-messages', label: 'Contact', icon: RiMailLine },
 		],
 	},
 	{
