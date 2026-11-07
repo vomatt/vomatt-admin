@@ -45,6 +45,15 @@ export const pGeneral = defineType({
 			hidden: ({ parent }) => parent?.layout !== 'editor',
 		},
 		{
+			title: 'Show "Cookie settings" button',
+			name: 'showCookieSettings',
+			type: 'boolean',
+			description:
+				'Shows the button that lets visitors change their analytics cookie choice, at the end of the page. For the page that lists the cookies.',
+			initialValue: false,
+			hidden: ({ parent }) => parent?.layout !== 'editor',
+		},
+		{
 			name: 'pageModules',
 			type: 'array',
 			of: [
