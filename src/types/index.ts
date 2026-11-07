@@ -206,7 +206,7 @@ export interface AdminFeedback {
 	createdAt: string;
 }
 
-/** `AdminContactMessageResponse`: a message sent from the about site's contact form. */
+/** `AdminContactMessageResponse`: a question sent from the contact form on about.vomatt.com. Senders are anonymous. */
 export interface AdminContactMessage {
 	id: string;
 	name: string;

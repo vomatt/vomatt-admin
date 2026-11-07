@@ -9,7 +9,7 @@ import { formatDateTime } from '@/lib/format';
 import { readPage } from '@/lib/search-params';
 import { AdminContactMessage, Page } from '@/types';
 
-export const metadata: Metadata = { title: 'Contact messages' };
+export const metadata: Metadata = { title: 'Contact' };
 
 export default async function ContactMessagesPage({ searchParams }: PageProps<'/contact-messages'>) {
 	const params = await searchParams;
@@ -20,36 +20,38 @@ export default async function ContactMessagesPage({ searchParams }: PageProps<'/
 	return (
 		<main className="flex flex-col gap-6 p-8">
 			<PageHeader
-				title="Contact messages"
-				description="Messages visitors sent from the about site's contact form, newest first. Opening this list is recorded in the audit log."
+				title="Contact"
+				description="Messages sent from the contact form on about.vomatt.com, newest first. Opening this list is recorded in the audit log."
 			/>
+
 			<div className="rounded-md border">
 				<Table>
 					<TableHeader>
 						<TableRow>
-							<TableHead>Message</TableHead>
-							<TableHead>Sender</TableHead>
+							<TableHead>Received</TableHead>
+							<TableHead>Name</TableHead>
+							<TableHead>Email</TableHead>
 							<TableHead>Language</TableHead>
-							<TableHead>Sent</TableHead>
+							<TableHead>Message</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{messages.content.length ? (
 							messages.content.map((item) => (
 								<TableRow key={item.id}>
-									<TableCell className="max-w-xl whitespace-pre-wrap break-words">{item.message}</TableCell>
-									<TableCell>
-										<div>{item.name}</div>
-										<a href={`mailto:${item.email}`} className="text-link hover:underline">
+									<TableCell className="align-top text-muted-foreground">{formatDateTime(item.createdAt)}</TableCell>
+									<TableCell className="align-top">{item.name}</TableCell>
+									<TableCell className="align-top">
+										<a href={`mailto:${item.email}`} className="underline underline-offset-4">
 											{item.email}
 										</a>
 									</TableCell>
-									<TableCell className="text-muted-foreground">{item.locale}</TableCell>
-									<TableCell className="text-muted-foreground">{formatDateTime(item.createdAt)}</TableCell>
+									<TableCell className="align-top">{item.locale}</TableCell>
+									<TableCell className="max-w-xl align-top break-words whitespace-pre-wrap">{item.message}</TableCell>
 								</TableRow>
 							))
 						) : (
-							<EmptyRow colSpan={4}>No contact messages yet.</EmptyRow>
+							<EmptyRow colSpan={5}>No messages yet.</EmptyRow>
 						)}
 					</TableBody>
 				</Table>
