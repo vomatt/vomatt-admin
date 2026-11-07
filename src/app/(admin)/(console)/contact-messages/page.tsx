@@ -37,7 +37,7 @@ export default async function ContactMessagesPage({ searchParams }: PageProps<'/
 						{messages.content.length ? (
 							messages.content.map((item) => (
 								<TableRow key={item.id}>
-									<TableCell className="max-w-xl whitespace-pre-wrap">{item.message}</TableCell>
+									<TableCell className="max-w-xl whitespace-pre-wrap break-words">{item.message}</TableCell>
 									<TableCell>
 										<div>{item.name}</div>
 										<a href={`mailto:${item.email}`} className="text-link hover:underline">
