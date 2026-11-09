@@ -25,7 +25,8 @@ process.env.API_URL = 'https://api.example.test';
 import { requestOtp } from '@/lib/api/services/auth';
 import { deleteComment } from '@/lib/api/services/comments';
 import { setLookupActive } from '@/lib/api/services/lookups';
-import { closePoll, deletePoll, restorePoll } from '@/lib/api/services/polls';
+import { createOfficial } from '@/lib/api/services/officials';
+import { closePoll, deletePoll, restorePoll, setPollPro } from '@/lib/api/services/polls';
 import { createTag, deleteTag } from '@/lib/api/services/tags';
 import { setUserRoles, suspendUser, unlockUserLogin } from '@/lib/api/services/users';
 
@@ -75,6 +76,39 @@ describe('tag actions', () => {
 		fetchMock.mockResolvedValue(jsonResponse({ success: false, errorCode: 'common.forbidden' }, 403));
 
 		await expect(createTag(input)).rejects.toThrow('NEXT_REDIRECT /login?session_expired=forbidden');
+	});
+});
+
+describe('poll and official actions', () => {
+	it('sets Pro with PUT and a pro flag', async () => {
+		fetchMock.mockResolvedValue(jsonResponse({ success: true, data: { vote: { id: 'p1', pro: true } } }));
+
+		await setPollPro('p1', true);
+
+		const [url, init] = fetchMock.mock.calls[0];
+		expect(url).toBe('https://api.example.test/api/admin/votes/p1/pro');
+		expect(init.method).toBe('PUT');
+		expect(JSON.parse(init.body)).toEqual({ pro: true });
+	});
+
+	it('creates an official account and returns the API error for a taken username', async () => {
+		const body = { username: 'sunrise_tower', displayName: 'Sunrise Tower', ownerUserId: 'u1' };
+		fetchMock.mockResolvedValueOnce(jsonResponse({ success: true, data: { id: 'o1', official: true } }, 201));
+		expect(await createOfficial(body)).toEqual({ ok: true, data: { id: 'o1', official: true } });
+		const [url, init] = fetchMock.mock.calls[0];
+		expect(url).toBe('https://api.example.test/api/admin/officials');
+		expect(init.method).toBe('POST');
+		expect(JSON.parse(init.body)).toEqual(body);
+
+		fetchMock.mockResolvedValueOnce(
+			jsonResponse({ success: false, errorCode: 'user.username.taken', message: 'Username already taken' }, 409)
+		);
+		expect(await createOfficial(body)).toEqual({
+			ok: false,
+			status: 409,
+			errorCode: 'user.username.taken',
+			message: 'Username already taken',
+		});
 	});
 });
 
