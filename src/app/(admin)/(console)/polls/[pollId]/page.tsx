@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { closePoll, deletePoll, restorePoll } from '@/lib/api/services/polls';
+import { closePoll, deletePoll, restorePoll, setPollPro } from '@/lib/api/services/polls';
 import { findPoll } from '@/lib/entity-name';
 import { formatDateTime, pollStatus } from '@/lib/format';
 
@@ -44,9 +44,11 @@ export default async function PollPage({ params }: PageProps<'/polls/[pollId]'>)
 		],
 		['Audience', AUDIENCE_LABELS[poll.audience]],
 		['Voters visible to', VOTER_VISIBILITY_LABELS[poll.voterVisibility]],
+		['Pro', poll.pro ? 'Yes' : 'No'],
 		['Starts', formatDateTime(poll.startTime)],
 		['Ends', `${formatDateTime(poll.endTime)}${endedEarly ? ' (ended early)' : ''}`],
 		['Deadline', formatDateTime(poll.deadline)],
+		...(poll.revealAt ? [['Results reveal', formatDateTime(poll.revealAt)] satisfies Detail] : []),
 		['Created', formatDateTime(poll.createdAt)],
 		...(deleted ? [['Deleted', formatDateTime(deletedAt)] satisfies Detail] : []),
 		[
@@ -90,6 +92,21 @@ export default async function PollPage({ params }: PageProps<'/polls/[pollId]'>)
 				<Button variant="outline" size="sm" asChild>
 					<Link href={`/audit-logs?resourceId=${poll.id}`}>Audit log</Link>
 				</Button>
+				{deleted ? null : poll.pro ? (
+					<ConfirmAction
+						action={setPollPro.bind(null, poll.id, false)}
+						label="Turn Pro off"
+						title="Turn Pro off for this poll?"
+						description="Phone verification is no longer required to vote. Voters stay hidden."
+					/>
+				) : (
+					<ConfirmAction
+						action={setPollPro.bind(null, poll.id, true)}
+						label="Turn Pro on"
+						title="Turn Pro on for this poll?"
+						description="Only users with a verified phone number can vote, ballots can't be anonymous, and voters are hidden from everyone."
+					/>
+				)}
 				{closable ? (
 					<ConfirmAction
 						action={closePoll.bind(null, poll.id)}
@@ -122,7 +139,9 @@ export default async function PollPage({ params }: PageProps<'/polls/[pollId]'>)
 						<CardTitle>Options</CardTitle>
 						<CardDescription>
 							{sealed
-								? 'Results are sealed until the poll ends.'
+								? poll.revealAt
+									? `Results are sealed until ${formatDateTime(poll.revealAt)}.`
+									: 'Results are sealed until the poll ends.'
 								: `${poll.participantCount} participant${poll.participantCount === 1 ? '' : 's'}`}
 						</CardDescription>
 					</CardHeader>

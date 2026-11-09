@@ -20,6 +20,11 @@ export async function deletePoll(pollId: string) {
 	return adminMutation<void>(pollPath(pollId), { method: 'DELETE' });
 }
 
+/** Idempotent. Turning Pro on also sets Voter Visibility to NOBODY. */
+export async function setPollPro(pollId: string, pro: boolean) {
+	return adminMutation<AdminPoll>(pollPath(pollId, '/pro'), { method: 'PUT', body: { pro } });
+}
+
 export async function restorePoll(pollId: string) {
 	return adminMutation<AdminPoll>(pollPath(pollId, '/restore'), { method: 'PATCH' });
 }

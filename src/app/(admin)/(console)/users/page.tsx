@@ -5,8 +5,10 @@ import { EmptyRow } from '@/components/admin/EmptyRow';
 import { FilterInput, Filters, FilterSelect } from '@/components/admin/Filters';
 import { PageHeader } from '@/components/admin/PageHeader';
 import { Pagination } from '@/components/admin/Pagination';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { RoleBadges, UserStatusBadge } from '@/components/users/UserBadges';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table,TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { OfficialForm } from '@/components/users/OfficialForm';
+import { RoleBadges,UserStatusBadge } from '@/components/users/UserBadges';
 import { adminFetch, withQuery } from '@/lib/api/admin';
 import { formatDateTime } from '@/lib/format';
 import { readPage, readParam } from '@/lib/search-params';
@@ -22,6 +24,17 @@ export default async function UsersPage({ searchParams }: PageProps<'/users'>) {
 	return (
 		<main className="flex flex-col gap-6 p-8">
 			<PageHeader title="Users" description="Every account, suspended ones included, newest first." />
+			<Card>
+				<CardHeader>
+					<CardTitle>New official account</CardTitle>
+					<CardDescription>
+						A group page that members publish as. The owner must be an active user who is not an official account.
+					</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<OfficialForm />
+				</CardContent>
+			</Card>
 			<Filters pathname="/users">
 				<FilterInput
 					name="q"

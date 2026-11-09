@@ -42,8 +42,6 @@ export default async function UserPage({ params }: PageProps<'/users/[userId]'>)
 		['Email', user.email ?? '—'],
 		['Phone', user.phoneNumber ?? '—'],
 		['Sign-in method', user.authMethod ?? '—'],
-		['Membership', user.membershipLevel],
-		['Points', user.points],
 		['Joined', formatDateTime(user.createdAt)],
 		['Last sign-in', formatDateTime(user.lastLoginAt)],
 		['User ID', <span key="id" className="font-mono text-xs">{user.id}</span>],
