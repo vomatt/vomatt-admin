@@ -7,7 +7,7 @@ import { PageHeader } from '@/components/admin/PageHeader';
 import { Pagination } from '@/components/admin/Pagination';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { OfficialForm } from '@/components/users/OfficialForm';
+import { CommunityForm } from '@/components/users/CommunityForm';
 import { RoleBadges, UserStatusBadge } from '@/components/users/UserBadges';
 import { adminFetch, withQuery } from '@/lib/api/admin';
 import { formatDateTime } from '@/lib/format';
@@ -26,13 +26,13 @@ export default async function UsersPage({ searchParams }: PageProps<'/users'>) {
 			<PageHeader title="Users" description="Every account, suspended ones included, newest first." />
 			<Card>
 				<CardHeader>
-					<CardTitle>New official account</CardTitle>
+					<CardTitle>New community account</CardTitle>
 					<CardDescription>
-						A group page that members publish as. The owner must be an active user who is not an official account.
+						A group page that members publish as. The owner must be an active user who is not a community account.
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<OfficialForm />
+					<CommunityForm />
 				</CardContent>
 			</Card>
 			<Filters pathname="/users">
