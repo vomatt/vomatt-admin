@@ -1,7 +1,7 @@
 'use server';
 
 import { adminMutation } from '@/lib/api/admin';
-import { AdminUserDetail, Role } from '@/types';
+import { AdminUserDetail, Plan, Role } from '@/types';
 
 // Auth: apiClient sends the caller's own token, and vomatt-api checks the
 // admin role on every /api/admin/** request.
@@ -16,6 +16,15 @@ function userPath(userId: string, action = '') {
  */
 export async function setUserRoles(userId: string, roles: Role[]) {
 	return adminMutation<AdminUserDetail>(userPath(userId, '/roles'), { method: 'PUT', body: { roles } });
+}
+
+/**
+ * Puts the account on a plan. An upgrade unlocks its locked community
+ * accounts up to the new limit; a downgrade over the limit starts a 7-day
+ * selection for the user. The same plan changes nothing.
+ */
+export async function changeUserPlan(userId: string, plan: Plan) {
+	return adminMutation<AdminUserDetail>(userPath(userId, '/plan'), { method: 'PATCH', body: { plan } });
 }
 
 /** The reason (up to 500 characters) goes to the audit log only. */

@@ -11,7 +11,7 @@ import { SuspendDialog } from '@/components/users/SuspendDialog';
 import { UnlockLoginDialog } from '@/components/users/UnlockLoginDialog';
 import { RoleBadges, UserStatusBadge } from '@/components/users/UserBadges';
 import { adminFetch } from '@/lib/api/admin';
-import { unsuspendUser } from '@/lib/api/services/users';
+import { changeUserPlan, unsuspendUser } from '@/lib/api/services/users';
 import { findUser } from '@/lib/entity-name';
 import { formatDateTime } from '@/lib/format';
 import { AdminUserOptions } from '@/types';
@@ -34,11 +34,13 @@ export default async function UserPage({ params }: PageProps<'/users/[userId]'>)
 	const [user, options] = await Promise.all([findUser(userId), getOptions()]);
 	if (!user) notFound();
 
+	const nextPlan = user.plan === 'PRO' ? 'FREE' : 'PRO';
 	const details: [string, React.ReactNode][] = [
 		['Display name', user.displayName ?? '—'],
 		['First name', user.firstName ?? '—'],
 		['Last name', user.lastName ?? '—'],
 		['Birthday', user.birthday ?? '—'],
+		['Plan', user.plan],
 		['Email', user.email ?? '—'],
 		['Phone', user.phoneNumber ?? '—'],
 		['Sign-in method', user.authMethod ?? '—'],
@@ -138,6 +140,33 @@ export default async function UserPage({ params }: PageProps<'/users/[userId]'>)
 				</CardHeader>
 				<CardContent>
 					<RolesForm userId={user.id} roles={user.roles} />
+				</CardContent>
+			</Card>
+
+			<Card>
+				<CardHeader>
+					<CardTitle>Plan</CardTitle>
+					<CardDescription>
+						Pro lets the user own more community accounts. An upgrade unlocks their locked ones up to the new
+						limit; a downgrade over the limit gives them 7 days to choose which to keep.
+					</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<div className="flex items-center gap-4 text-sm">
+						<span>
+							Current plan: <span className="font-medium">{user.plan}</span>
+						</span>
+						<ConfirmAction
+							action={changeUserPlan.bind(null, user.id, nextPlan)}
+							label={`Switch to ${nextPlan}`}
+							title={`Put ${user.username} on ${nextPlan}?`}
+							description={
+								nextPlan === 'FREE'
+									? 'If they own more community accounts than the Free limit, they get 7 days to choose which to keep; the rest are then locked.'
+									: 'Their locked community accounts are unlocked, up to the Pro limit.'
+							}
+						/>
+					</div>
 				</CardContent>
 			</Card>
 		</main>

@@ -60,6 +60,9 @@ export interface AdminStats {
 export const ROLES = ['user', 'moderator', 'admin'] as const;
 export type Role = (typeof ROLES)[number];
 
+export const PLANS = ['FREE', 'PRO'] as const;
+export type Plan = (typeof PLANS)[number];
+
 /** `AdminUserResponse`: a row of the user list. `active` is false when suspended. */
 export interface AdminUser {
 	id: string;
@@ -82,6 +85,7 @@ export interface AdminUserDetail extends AdminUser {
 	lastName: string | null;
 	/** `yyyy-MM-dd`, shown whatever the user's visibility settings. */
 	birthday: string | null;
+	plan: Plan;
 	pollCount: number;
 	ballotCount: number;
 	commentCount: number;

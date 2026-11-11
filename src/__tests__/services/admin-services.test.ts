@@ -28,7 +28,7 @@ import { setLookupActive } from '@/lib/api/services/lookups';
 import { createOfficial } from '@/lib/api/services/officials';
 import { closePoll, deletePoll, restorePoll, setPollPro } from '@/lib/api/services/polls';
 import { createTag, deleteTag } from '@/lib/api/services/tags';
-import { setUserRoles, suspendUser, unlockUserLogin } from '@/lib/api/services/users';
+import { changeUserPlan, setUserRoles, suspendUser, unlockUserLogin } from '@/lib/api/services/users';
 
 function jsonResponse(body: unknown, status = 200) {
 	return new Response(JSON.stringify(body), {
@@ -134,6 +134,17 @@ describe('user actions', () => {
 		expect(url).toBe('https://api.example.test/api/admin/users/u1/roles');
 		expect(init.method).toBe('PUT');
 		expect(JSON.parse(init.body)).toEqual({ roles: ['user', 'moderator'] });
+	});
+
+	it('changes the plan with PATCH', async () => {
+		fetchMock.mockResolvedValue(jsonResponse({ success: true, data: { id: 'u1', plan: 'PRO' } }));
+
+		await changeUserPlan('u1', 'PRO');
+
+		const [url, init] = fetchMock.mock.calls[0];
+		expect(url).toBe('https://api.example.test/api/admin/users/u1/plan');
+		expect(init.method).toBe('PATCH');
+		expect(JSON.parse(init.body)).toEqual({ plan: 'PRO' });
 	});
 
 	it('sends the suspend reason', async () => {
