@@ -1,7 +1,7 @@
 'use server';
 
 import { adminMutation } from '@/lib/api/admin';
-import { AdminUserDetail, Plan, Role } from '@/types';
+import { AdminUserDetail, Plan, PLANS, Role } from '@/types';
 
 // Auth: apiClient sends the caller's own token, and vomatt-api checks the
 // admin role on every /api/admin/** request.
@@ -24,6 +24,7 @@ export async function setUserRoles(userId: string, roles: Role[]) {
  * selection for the user. The same plan changes nothing.
  */
 export async function changeUserPlan(userId: string, plan: Plan) {
+	if (!PLANS.includes(plan)) return { ok: false as const, status: 400, message: 'Unknown plan.' };
 	return adminMutation<AdminUserDetail>(userPath(userId, '/plan'), { method: 'PATCH', body: { plan } });
 }
 
