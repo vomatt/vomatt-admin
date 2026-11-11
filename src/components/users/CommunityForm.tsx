@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button';
 import { FieldError } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { createOfficial } from '@/lib/api/services/officials';
+import { createCommunity } from '@/lib/api/services/communities';
 
-/** Creates an official account (a group's page) and its first owner. */
-export function OfficialForm() {
+/** Creates a community account (a group's page) and its first owner. */
+export function CommunityForm() {
 	const [error, setError] = useState<string | null>(null);
 	const [created, setCreated] = useState<string | null>(null);
 	const [pending, startTransition] = useTransition();
@@ -23,7 +23,7 @@ export function OfficialForm() {
 		setError(null);
 		setCreated(null);
 		startTransition(async () => {
-			const result = await createOfficial({
+			const result = await createCommunity({
 				username: text('username'),
 				displayName: text('displayName'),
 				ownerUserId: text('ownerUserId'),
