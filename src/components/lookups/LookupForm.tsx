@@ -14,6 +14,9 @@ import { Lookup, LookupInput } from '@/types';
 /** Exported for tests. `lookupValue` must be JSON: quote plain strings. */
 export function readLookupInput(formData: FormData): LookupInput | string {
 	const text = (name: string) => String(formData.get(name) ?? '').trim();
+	const lookupType = text('lookupType');
+	const lookupKey = text('lookupKey');
+	if (!lookupType || !lookupKey) return 'Type and key cannot be blank.';
 	let lookupValue: unknown;
 	try {
 		lookupValue = JSON.parse(text('lookupValue'));
@@ -22,8 +25,8 @@ export function readLookupInput(formData: FormData): LookupInput | string {
 	}
 	if (lookupValue === null) return 'Value cannot be null.';
 	return {
-		lookupType: text('lookupType'),
-		lookupKey: text('lookupKey'),
+		lookupType,
+		lookupKey,
 		lookupValue,
 		description: text('description') || null,
 		parentType: text('parentType') || null,
