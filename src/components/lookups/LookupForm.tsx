@@ -14,6 +14,7 @@ import { Lookup, LookupInput } from '@/types';
 /** Exported for tests. `lookupValue` must be JSON: quote plain strings. */
 export function readLookupInput(formData: FormData): LookupInput | string {
 	const text = (name: string) => String(formData.get(name) ?? '').trim();
+	if (!text('lookupType') || !text('lookupKey')) return 'Type and key cannot be blank.';
 	let lookupValue: unknown;
 	try {
 		lookupValue = JSON.parse(text('lookupValue'));
