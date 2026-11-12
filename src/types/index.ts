@@ -149,17 +149,17 @@ export interface Poll {
 	revealAt: string | null;
 }
 
-/** `UserDto`: the official account `POST /api/admin/officials` creates. */
-export interface OfficialAccount {
+/** `UserDto`: the community account `POST /api/admin/communities` creates. */
+export interface CommunityAccount {
 	id: string;
 	username: string;
 	displayName: string | null;
 	avatarUrl: string | null;
-	official: boolean;
+	community: boolean;
 }
 
-/** `CreateOfficialRequest` */
-export interface OfficialInput {
+/** `CreateCommunityRequest` */
+export interface CommunityInput {
 	username: string;
 	displayName: string;
 	ownerUserId: string;

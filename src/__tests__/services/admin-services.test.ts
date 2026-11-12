@@ -24,8 +24,8 @@ process.env.API_URL = 'https://api.example.test';
 
 import { requestOtp } from '@/lib/api/services/auth';
 import { deleteComment } from '@/lib/api/services/comments';
+import { createCommunity } from '@/lib/api/services/communities';
 import { setLookupActive } from '@/lib/api/services/lookups';
-import { createOfficial } from '@/lib/api/services/officials';
 import { closePoll, deletePoll, restorePoll, setPollPro } from '@/lib/api/services/polls';
 import { createTag, deleteTag } from '@/lib/api/services/tags';
 import { changeUserPlan, setUserRoles, suspendUser, unlockUserLogin } from '@/lib/api/services/users';
@@ -79,7 +79,7 @@ describe('tag actions', () => {
 	});
 });
 
-describe('poll and official actions', () => {
+describe('poll and community actions', () => {
 	it('sets Pro with PUT and a pro flag', async () => {
 		fetchMock.mockResolvedValue(jsonResponse({ success: true, data: { vote: { id: 'p1', pro: true } } }));
 
@@ -91,19 +91,19 @@ describe('poll and official actions', () => {
 		expect(JSON.parse(init.body)).toEqual({ pro: true });
 	});
 
-	it('creates an official account and returns the API error for a taken username', async () => {
+	it('creates a community account and returns the API error for a taken username', async () => {
 		const body = { username: 'sunrise_tower', displayName: 'Sunrise Tower', ownerUserId: 'u1' };
-		fetchMock.mockResolvedValueOnce(jsonResponse({ success: true, data: { id: 'o1', official: true } }, 201));
-		expect(await createOfficial(body)).toEqual({ ok: true, data: { id: 'o1', official: true } });
+		fetchMock.mockResolvedValueOnce(jsonResponse({ success: true, data: { id: 'o1', community: true } }, 201));
+		expect(await createCommunity(body)).toEqual({ ok: true, data: { id: 'o1', community: true } });
 		const [url, init] = fetchMock.mock.calls[0];
-		expect(url).toBe('https://api.example.test/api/admin/officials');
+		expect(url).toBe('https://api.example.test/api/admin/communities');
 		expect(init.method).toBe('POST');
 		expect(JSON.parse(init.body)).toEqual(body);
 
 		fetchMock.mockResolvedValueOnce(
 			jsonResponse({ success: false, errorCode: 'user.username.taken', message: 'Username already taken' }, 409)
 		);
-		expect(await createOfficial(body)).toEqual({
+		expect(await createCommunity(body)).toEqual({
 			ok: false,
 			status: 409,
 			errorCode: 'user.username.taken',
