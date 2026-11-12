@@ -74,8 +74,12 @@ describe('readLookupInput', () => {
 	});
 
 	it('rejects a blank type or key', () => {
-		expect(readLookupInput(formData({ lookupType: ' ', lookupKey: 'k', lookupValue: '1' }))).toMatch(/blank/);
-		expect(readLookupInput(formData({ lookupType: 't', lookupKey: '', lookupValue: '1' }))).toMatch(/blank/);
+		const blank = 'Type and key cannot be blank.';
+		expect(readLookupInput(formData({ lookupType: ' ', lookupKey: 'k', lookupValue: '1' }))).toBe(blank);
+		expect(readLookupInput(formData({ lookupType: 't', lookupKey: '', lookupValue: '1' }))).toBe(blank);
+		expect(readLookupInput(formData({ lookupType: '', lookupKey: '', lookupValue: '1' }))).toBe(blank);
+		// checked before the value is parsed
+		expect(readLookupInput(formData({ lookupType: '', lookupKey: 'k', lookupValue: 'plain' }))).toBe(blank);
 	});
 
 	it('rejects a value that is not JSON', () => {
