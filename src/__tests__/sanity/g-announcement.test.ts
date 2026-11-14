@@ -31,6 +31,12 @@ describe('gAnnouncement message', () => {
 		expect(validateMessage([], true)).toBe(
 			'Required while the announcement is on'
 		);
+		expect(
+			validateMessage(
+				[{ _type: 'block', children: [{ _type: 'span', text: ' ' }] }],
+				true
+			)
+		).toBe('Required while the announcement is on');
 		expect(validateMessage([block], true)).toBe(true);
 	});
 

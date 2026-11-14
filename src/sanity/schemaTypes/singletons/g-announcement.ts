@@ -22,7 +22,13 @@ export const gAnnouncement = defineType({
 					const enabled = (
 						context.document as { enabled?: boolean } | undefined
 					)?.enabled;
-					if (enabled && (!Array.isArray(message) || message.length === 0)) {
+					// An empty paragraph can stay after the text is cleared
+					const hasText =
+						Array.isArray(message) &&
+						message.some((block: { children?: { text?: string }[] }) =>
+							block.children?.some((child) => child.text?.trim())
+						);
+					if (enabled && !hasText) {
 						return 'Required while the announcement is on';
 					}
 					return true;
