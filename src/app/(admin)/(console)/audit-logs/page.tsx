@@ -19,11 +19,11 @@ export const metadata: Metadata = { title: 'Audit log' };
 
 // The values vomatt-api's @Auditable annotations record; the API doesn't publish the set
 const ACTIONS = [
-	'ADD_MEMBERS', 'BLOCK', 'CREATE', 'DEACTIVATE', 'DELETE', 'FORCE_CLOSE', 'FORCE_DELETE', 'INVITE', 'LIKE',
-	'REMOVE_MEMBER', 'RESTORE', 'RETRACT', 'SUSPEND', 'UNBLOCK', 'UNINVITE', 'UNLIKE', 'UNLOCK_LOGIN', 'UNSUSPEND',
+	'ADD_MEMBERS', 'BLOCK', 'CHANGE_PLAN', 'CREATE', 'DEACTIVATE', 'DELETE', 'FORCE_CLOSE', 'FORCE_DELETE', 'INVITE', 'LIKE',
+	'LOCK', 'REMOVE_MEMBER', 'RESTORE', 'RETRACT', 'SUSPEND', 'UNBLOCK', 'UNINVITE', 'UNLIKE', 'UNLOCK', 'UNLOCK_LOGIN', 'UNSUSPEND',
 	'UPDATE', 'UPDATE_ROLES', 'VIEW', 'VOTE',
 ];
-const RESOURCE_TYPES: Record<string, string> = { USER: 'User', VOTE: 'Poll', COMMENT: 'Comment', COMMENT_REPORT: 'Comment report', VOTE_REPORT: 'Poll report', GROUP: 'Group', FEEDBACK: 'Feedback', CONTACT_MESSAGE: 'Contact message' };
+const RESOURCE_TYPES: Record<string, string> = { USER: 'User', VOTE: 'Poll', COMMENT: 'Comment', COMMUNITY: 'Community account', COMMENT_REPORT: 'Comment report', VOTE_REPORT: 'Poll report', GROUP: 'Group', FEEDBACK: 'Feedback', CONTACT_MESSAGE: 'Contact message' };
 
 function actionLabel(action: string) {
 	return action.charAt(0) + action.slice(1).toLowerCase().replaceAll('_', ' ');

@@ -60,6 +60,9 @@ export interface AdminStats {
 export const ROLES = ['user', 'moderator', 'admin'] as const;
 export type Role = (typeof ROLES)[number];
 
+export const PLANS = ['FREE', 'PRO'] as const;
+export type Plan = (typeof PLANS)[number];
+
 /** `AdminUserResponse`: a row of the user list. `active` is false when suspended. */
 export interface AdminUser {
 	id: string;
@@ -70,22 +73,19 @@ export interface AdminUser {
 	/** Masked in the list (`+88****78`); the detail has the full value. */
 	phoneNumber: string | null;
 	authMethod: string | null;
-	/** `FREE` or `PRO`. */
-	plan: string;
+	plan: Plan;
 	roles: string[];
 	active: boolean;
 	lastLoginAt: string | null;
 	createdAt: string;
 }
 
-/** `AdminUserDetail`: the list row unmasked, plus names, birthday, points and activity counts. */
+/** `AdminUserDetail`: the list row unmasked, plus names, birthday and activity counts. */
 export interface AdminUserDetail extends AdminUser {
 	firstName: string | null;
 	lastName: string | null;
 	/** `yyyy-MM-dd`, shown whatever the user's visibility settings. */
 	birthday: string | null;
-	points: number;
-	membershipLevel: string;
 	pollCount: number;
 	ballotCount: number;
 	commentCount: number;
@@ -143,6 +143,26 @@ export interface Poll {
 	audience: Audience;
 	voterVisibility: 'NOBODY' | 'OWNER' | 'SIGNED_IN';
 	inviteeCount: number | null;
+	/** Set by an admin: phone-verified voters only, voters hidden, no anonymous ballots. */
+	pro: boolean;
+	/** When sealed results unseal; null when they unseal as the poll ends. */
+	revealAt: string | null;
+}
+
+/** `UserDto`: the community account `POST /api/admin/communities` creates. */
+export interface CommunityAccount {
+	id: string;
+	username: string;
+	displayName: string | null;
+	avatarUrl: string | null;
+	community: boolean;
+}
+
+/** `CreateCommunityRequest` */
+export interface CommunityInput {
+	username: string;
+	displayName: string;
+	ownerUserId: string;
 }
 
 /** `AdminVoteResponse`: a poll with its deletion and owner state. */

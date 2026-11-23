@@ -3,6 +3,14 @@ import type { Metadata } from 'next';
 import { FilterInput, Filters, FilterSelect } from '@/components/admin/Filters';
 import { PageHeader } from '@/components/admin/PageHeader';
 import { Pagination } from '@/components/admin/Pagination';
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from '@/components/ui/card';
+import { CommunityForm } from '@/components/users/CommunityForm';
 import { UsersTable } from '@/components/users/UsersTable';
 import { adminFetch, withQuery } from '@/lib/api/admin';
 import { AUTH_METHODS } from '@/lib/format';
@@ -77,6 +85,18 @@ export default async function UsersPage({ searchParams }: PageProps<'/users'>) {
 				title="Users"
 				description="Every account, suspended ones included, newest first."
 			/>
+			<Card>
+				<CardHeader>
+					<CardTitle>New community account</CardTitle>
+					<CardDescription>
+						A group page that members publish as. The owner must be an active
+						user who is not a community account.
+					</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<CommunityForm />
+				</CardContent>
+			</Card>
 			<Filters pathname="/users">
 				<FilterInput
 					name="q"

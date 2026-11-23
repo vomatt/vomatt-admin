@@ -24,10 +24,11 @@ process.env.API_URL = 'https://api.example.test';
 
 import { requestOtp } from '@/lib/api/services/auth';
 import { deleteComment } from '@/lib/api/services/comments';
+import { createCommunity } from '@/lib/api/services/communities';
 import { setLookupActive } from '@/lib/api/services/lookups';
-import { closePoll, deletePoll, restorePoll } from '@/lib/api/services/polls';
+import { closePoll, deletePoll, restorePoll, setPollPro } from '@/lib/api/services/polls';
 import { createTag, deleteTag } from '@/lib/api/services/tags';
-import { setUserRoles, suspendUser, unlockUserLogin } from '@/lib/api/services/users';
+import { changeUserPlan, setUserRoles, suspendUser, unlockUserLogin } from '@/lib/api/services/users';
 
 function jsonResponse(body: unknown, status = 200) {
 	return new Response(JSON.stringify(body), {
@@ -78,6 +79,39 @@ describe('tag actions', () => {
 	});
 });
 
+describe('poll and community actions', () => {
+	it('sets Pro with PUT and a pro flag', async () => {
+		fetchMock.mockResolvedValue(jsonResponse({ success: true, data: { vote: { id: 'p1', pro: true } } }));
+
+		await setPollPro('p1', true);
+
+		const [url, init] = fetchMock.mock.calls[0];
+		expect(url).toBe('https://api.example.test/api/admin/votes/p1/pro');
+		expect(init.method).toBe('PUT');
+		expect(JSON.parse(init.body)).toEqual({ pro: true });
+	});
+
+	it('creates a community account and returns the API error for a taken username', async () => {
+		const body = { username: 'sunrise_tower', displayName: 'Sunrise Tower', ownerUserId: 'u1' };
+		fetchMock.mockResolvedValueOnce(jsonResponse({ success: true, data: { id: 'o1', community: true } }, 201));
+		expect(await createCommunity(body)).toEqual({ ok: true, data: { id: 'o1', community: true } });
+		const [url, init] = fetchMock.mock.calls[0];
+		expect(url).toBe('https://api.example.test/api/admin/communities');
+		expect(init.method).toBe('POST');
+		expect(JSON.parse(init.body)).toEqual(body);
+
+		fetchMock.mockResolvedValueOnce(
+			jsonResponse({ success: false, errorCode: 'user.username.taken', message: 'Username already taken' }, 409)
+		);
+		expect(await createCommunity(body)).toEqual({
+			ok: false,
+			status: 409,
+			errorCode: 'user.username.taken',
+			message: 'Username already taken',
+		});
+	});
+});
+
 describe('lookup actions', () => {
 	it('deactivates through the PATCH endpoint', async () => {
 		fetchMock.mockResolvedValue(jsonResponse({ success: true, data: { success: true } }));
@@ -100,6 +134,17 @@ describe('user actions', () => {
 		expect(url).toBe('https://api.example.test/api/admin/users/u1/roles');
 		expect(init.method).toBe('PUT');
 		expect(JSON.parse(init.body)).toEqual({ roles: ['user', 'moderator'] });
+	});
+
+	it('changes the plan with PATCH', async () => {
+		fetchMock.mockResolvedValue(jsonResponse({ success: true, data: { id: 'u1', plan: 'PRO' } }));
+
+		await changeUserPlan('u1', 'PRO');
+
+		const [url, init] = fetchMock.mock.calls[0];
+		expect(url).toBe('https://api.example.test/api/admin/users/u1/plan');
+		expect(init.method).toBe('PATCH');
+		expect(JSON.parse(init.body)).toEqual({ plan: 'PRO' });
 	});
 
 	it('sends the suspend reason', async () => {
