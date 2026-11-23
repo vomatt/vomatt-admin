@@ -70,6 +70,8 @@ export interface AdminUser {
 	/** Masked in the list (`+88****78`); the detail has the full value. */
 	phoneNumber: string | null;
 	authMethod: string | null;
+	/** `FREE` or `PRO`. */
+	plan: string;
 	roles: string[];
 	active: boolean;
 	lastLoginAt: string | null;

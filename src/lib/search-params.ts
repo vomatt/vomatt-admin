@@ -6,7 +6,12 @@ export const ANY = 'any';
 /** A trimmed single query value, or '' when absent. */
 export function readParam(params: Params, name: string) {
 	const value = params[name];
-	const text = typeof value === 'string' ? value.trim() : '';
+	return typeof value === 'string' ? value.trim() : '';
+}
+
+/** A `FilterSelect` value: like `readParam`, with `ANY` read as ''. */
+export function readSelectParam(params: Params, name: string) {
+	const text = readParam(params, name);
 	return text === ANY ? '' : text;
 }
 

@@ -1,27 +1,82 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 
-import { EmptyRow } from '@/components/admin/EmptyRow';
 import { FilterInput, Filters, FilterSelect } from '@/components/admin/Filters';
 import { PageHeader } from '@/components/admin/PageHeader';
 import { Pagination } from '@/components/admin/Pagination';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { RoleBadges, UserStatusBadge } from '@/components/users/UserBadges';
+import { UsersTable } from '@/components/users/UsersTable';
 import { adminFetch, withQuery } from '@/lib/api/admin';
-import { formatDateTime } from '@/lib/format';
-import { readPage, readParam } from '@/lib/search-params';
+import { AUTH_METHODS } from '@/lib/format';
+import { readPage, readParam, readSelectParam } from '@/lib/search-params';
 import { AdminUser, Page } from '@/types';
 
 export const metadata: Metadata = { title: 'Users' };
 
+const EMAIL_DOMAINS = [
+	'vomatt.test',
+	'gmail.com',
+	'yahoo.com.tw',
+	'yahoo.com',
+	'outlook.com',
+	'hotmail.com',
+	'icloud.com',
+];
+
+const INACTIVE_DAYS = {
+	30: 'No sign-in in 30 days',
+	90: 'No sign-in in 90 days',
+	180: 'No sign-in in 180 days',
+	365: 'No sign-in in a year',
+};
+
+const PLANS = { FREE: 'Free', PRO: 'Pro' };
+
+/** A select's value from the URL, or '' when it is not one of `options` (an old or hand-edited link the API would reject). */
+function option(value: string, options: Record<string, string>) {
+	return Object.hasOwn(options, value) ? value : '';
+}
+
+/** Midnight Taipei time of a `<input type="date">` day, `addDays` later; '' stays unset. */
+function taipeiMidnight(day: string, addDays = 0) {
+	const date = new Date(`${day}T00:00:00Z`);
+	// A bad date in a hand-edited link is ignored rather than crashing the page
+	if (!/^\d{4}-\d{2}-\d{2}$/.test(day) || Number.isNaN(date.getTime()))
+		return undefined;
+	date.setUTCDate(date.getUTCDate() + addDays);
+	return `${date.toISOString().slice(0, 10)}T00:00:00+08:00`;
+}
+
 export default async function UsersPage({ searchParams }: PageProps<'/users'>) {
 	const params = await searchParams;
-	const filters = { q: readParam(params, 'q'), status: readParam(params, 'status'), role: readParam(params, 'role') };
-	const users = await adminFetch<Page<AdminUser>>(withQuery('/admin/users', { ...filters, page: readPage(params) }));
+	const filters = {
+		q: readParam(params, 'q'),
+		emailDomain: readParam(params, 'emailDomain'),
+		status: readSelectParam(params, 'status'),
+		role: readSelectParam(params, 'role'),
+		authMethod: option(readSelectParam(params, 'authMethod'), AUTH_METHODS),
+		plan: option(readSelectParam(params, 'plan'), PLANS),
+		inactiveDays: option(
+			readSelectParam(params, 'inactiveDays'),
+			INACTIVE_DAYS
+		),
+		joinedFrom: readParam(params, 'joinedFrom'),
+		joinedTo: readParam(params, 'joinedTo'),
+	};
+	const users = await adminFetch<Page<AdminUser>>(
+		withQuery('/admin/users', {
+			...filters,
+			joinedFrom: taipeiMidnight(filters.joinedFrom),
+			// The field is the last day to include; the API's end is exclusive
+			joinedTo: taipeiMidnight(filters.joinedTo, 1),
+			page: readPage(params),
+		})
+	);
 
 	return (
 		<main className="flex flex-col gap-6 p-8">
-			<PageHeader title="Users" description="Every account, suspended ones included, newest first." />
+			<PageHeader
+				title="Users"
+				description="Every account, suspended ones included, newest first."
+			/>
 			<Filters pathname="/users">
 				<FilterInput
 					name="q"
@@ -30,6 +85,18 @@ export default async function UsersPage({ searchParams }: PageProps<'/users'>) {
 					defaultValue={filters.q}
 					className="w-64"
 				/>
+				<FilterInput
+					name="emailDomain"
+					label="Email domain"
+					placeholder="Any"
+					list="email-domains"
+					defaultValue={filters.emailDomain}
+				/>
+				<datalist id="email-domains">
+					{EMAIL_DOMAINS.map((domain) => (
+						<option key={domain} value={domain} />
+					))}
+				</datalist>
 				<FilterSelect
 					name="status"
 					label="Status"
@@ -42,52 +109,48 @@ export default async function UsersPage({ searchParams }: PageProps<'/users'>) {
 					defaultValue={filters.role}
 					options={{ user: 'User', moderator: 'Moderator', admin: 'Admin' }}
 				/>
+				<FilterSelect
+					name="authMethod"
+					label="Sign-in"
+					defaultValue={filters.authMethod}
+					options={AUTH_METHODS}
+				/>
+				<FilterSelect
+					name="plan"
+					label="Plan"
+					defaultValue={filters.plan}
+					options={PLANS}
+				/>
+				<FilterSelect
+					name="inactiveDays"
+					label="Last sign-in"
+					defaultValue={filters.inactiveDays}
+					options={INACTIVE_DAYS}
+				/>
+				<FilterInput
+					name="joinedFrom"
+					label="Joined from"
+					type="date"
+					defaultValue={filters.joinedFrom}
+					className="w-40"
+				/>
+				<FilterInput
+					name="joinedTo"
+					label="Joined until"
+					type="date"
+					defaultValue={filters.joinedTo}
+					className="w-40"
+				/>
 			</Filters>
 
-			<div className="rounded-md border">
-				<Table>
-					<TableHeader>
-						<TableRow>
-							<TableHead>User</TableHead>
-							<TableHead>Contact</TableHead>
-							<TableHead>Roles</TableHead>
-							<TableHead>Status</TableHead>
-							<TableHead>Last sign-in</TableHead>
-							<TableHead>Joined</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{users.content.length ? (
-							users.content.map((user) => (
-								<TableRow key={user.id}>
-									<TableCell>
-										<Link href={`/users/${user.id}`} className="font-medium hover:underline">
-											{user.username}
-										</Link>
-										{user.displayName ? (
-											<p className="text-xs text-muted-foreground">{user.displayName}</p>
-										) : null}
-									</TableCell>
-									<TableCell className="text-muted-foreground">
-										{user.email ?? user.phoneNumber ?? '—'}
-									</TableCell>
-									<TableCell>
-										<RoleBadges roles={user.roles} />
-									</TableCell>
-									<TableCell>
-										<UserStatusBadge active={user.active} />
-									</TableCell>
-									<TableCell className="text-muted-foreground">{formatDateTime(user.lastLoginAt)}</TableCell>
-									<TableCell className="text-muted-foreground">{formatDateTime(user.createdAt)}</TableCell>
-								</TableRow>
-							))
-						) : (
-							<EmptyRow colSpan={6}>No users match these filters.</EmptyRow>
-						)}
-					</TableBody>
-				</Table>
-			</div>
-			<Pagination pathname="/users" params={filters} page={users.page} limit={users.limit} total={users.total} />
+			<UsersTable users={users.content} />
+			<Pagination
+				pathname="/users"
+				params={filters}
+				page={users.page}
+				limit={users.limit}
+				total={users.total}
+			/>
 		</main>
 	);
 }
