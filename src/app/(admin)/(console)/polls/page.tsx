@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { adminFetch, withQuery } from '@/lib/api/admin';
 import { entityName } from '@/lib/entity-name';
 import { formatDateTime, pollStatus } from '@/lib/format';
-import { readPage, readParam } from '@/lib/search-params';
+import { readPage, readParam, readSelectParam } from '@/lib/search-params';
 import { AdminPoll, Page } from '@/types';
 
 export const metadata: Metadata = { title: 'Polls' };
@@ -22,9 +22,9 @@ export default async function PollsPage({ searchParams }: PageProps<'/polls'>) {
 	const params = await searchParams;
 	const filters = {
 		q: readParam(params, 'q'),
-		status: readParam(params, 'status'),
-		audience: readParam(params, 'audience'),
-		deleted: readParam(params, 'deleted'),
+		status: readSelectParam(params, 'status'),
+		audience: readSelectParam(params, 'audience'),
+		deleted: readSelectParam(params, 'deleted'),
 		creatorId: readParam(params, 'creatorId'),
 	};
 	const [polls, creatorName] = await Promise.all([

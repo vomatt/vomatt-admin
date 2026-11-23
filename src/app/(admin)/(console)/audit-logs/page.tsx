@@ -12,7 +12,7 @@ import { adminFetch, withQuery } from '@/lib/api/admin';
 import { AUDIT_RESOURCE_KINDS } from '@/lib/entities';
 import { entityName, findUser } from '@/lib/entity-name';
 import { formatDateTime } from '@/lib/format';
-import { readPage, readParam } from '@/lib/search-params';
+import { readPage, readParam, readSelectParam } from '@/lib/search-params';
 import { AuditLog, Page } from '@/types';
 
 export const metadata: Metadata = { title: 'Audit log' };
@@ -52,8 +52,8 @@ export default async function AuditLogsPage({ searchParams }: PageProps<'/audit-
 	const params = await searchParams;
 	const filters = {
 		userId: readParam(params, 'userId'),
-		action: readParam(params, 'action').toUpperCase(),
-		resourceType: readParam(params, 'resourceType').toUpperCase(),
+		action: readSelectParam(params, 'action').toUpperCase(),
+		resourceType: readSelectParam(params, 'resourceType').toUpperCase(),
 		resourceId: readParam(params, 'resourceId'),
 		from: readParam(params, 'from'),
 		to: readParam(params, 'to'),

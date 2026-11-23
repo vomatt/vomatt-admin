@@ -73,6 +73,7 @@ export interface AdminUser {
 	/** Masked in the list (`+88****78`); the detail has the full value. */
 	phoneNumber: string | null;
 	authMethod: string | null;
+	plan: Plan;
 	roles: string[];
 	active: boolean;
 	lastLoginAt: string | null;
@@ -85,7 +86,6 @@ export interface AdminUserDetail extends AdminUser {
 	lastName: string | null;
 	/** `yyyy-MM-dd`, shown whatever the user's visibility settings. */
 	birthday: string | null;
-	plan: Plan;
 	pollCount: number;
 	ballotCount: number;
 	commentCount: number;

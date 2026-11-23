@@ -5,7 +5,7 @@ jest.mock('server-only', () => ({}));
 
 import { withQuery } from '@/lib/api/admin';
 import { pollStatus } from '@/lib/format';
-import { readPage, readParam } from '@/lib/search-params';
+import { readPage, readParam, readSelectParam } from '@/lib/search-params';
 
 describe('withQuery', () => {
 	it('leaves out empty params', () => {
@@ -26,10 +26,17 @@ describe('withQuery', () => {
 });
 
 describe('readParam', () => {
-	it('trims and reads "any" as no filter', () => {
+	it('trims and keeps typed text, "any" included', () => {
 		expect(readParam({ q: ' ann ', status: 'any', role: ['a', 'b'] }, 'q')).toBe('ann');
-		expect(readParam({ status: 'any' }, 'status')).toBe('');
+		expect(readParam({ q: 'any' }, 'q')).toBe('any');
 		expect(readParam({ role: ['a', 'b'] }, 'role')).toBe('');
+	});
+});
+
+describe('readSelectParam', () => {
+	it('reads the "any" option as no filter', () => {
+		expect(readSelectParam({ status: 'any' }, 'status')).toBe('');
+		expect(readSelectParam({ status: ' active ' }, 'status')).toBe('active');
 	});
 });
 

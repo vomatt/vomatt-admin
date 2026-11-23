@@ -19,8 +19,8 @@ const config: Config = {
 	],
 };
 
-// groq-js (and its obug dependency) ship only ES modules, so Jest must transform them too
-const esmPackages = ['groq-js', 'obug'];
+// groq-js (and its obug dependency) and TanStack Table ship only ES modules, so Jest must transform them too
+const esmPackages = ['groq-js', 'obug', '@tanstack'];
 
 export default async () => {
 	const resolved = await createJestConfig(config)();

@@ -13,7 +13,7 @@ import { adminFetch, withQuery } from '@/lib/api/admin';
 import { deleteComment } from '@/lib/api/services/comments';
 import { entityName } from '@/lib/entity-name';
 import { formatDateTime } from '@/lib/format';
-import { readPage, readParam } from '@/lib/search-params';
+import { readPage, readParam, readSelectParam } from '@/lib/search-params';
 import { AdminComment, Page } from '@/types';
 
 export const metadata: Metadata = { title: 'Comments' };
@@ -22,7 +22,7 @@ export default async function CommentsPage({ searchParams }: PageProps<'/comment
 	const params = await searchParams;
 	const filters = {
 		q: readParam(params, 'q'),
-		deleted: readParam(params, 'deleted'),
+		deleted: readSelectParam(params, 'deleted'),
 		voteId: readParam(params, 'voteId'),
 		userId: readParam(params, 'userId'),
 	};
