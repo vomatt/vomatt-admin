@@ -33,13 +33,13 @@ export default async function CommentsPage({ searchParams }: PageProps<'/comment
 	]);
 
 	return (
-		<main className="flex flex-col gap-6 p-8">
+		<main className="flex flex-col gap-6 p-4 sm:p-8">
 			<PageHeader
 				title="Comments"
 				description="Comments and replies on every poll, newest first. Deleted ones keep their text here."
 			/>
 			<Filters pathname="/comments">
-				<FilterInput name="q" label="Search" placeholder="Text in the comment" defaultValue={filters.q} className="w-64" />
+				<FilterInput name="q" label="Search" placeholder="Text in the comment" defaultValue={filters.q} className="sm:w-64" />
 				<FilterSelect
 					name="deleted"
 					label="Deleted"
@@ -49,12 +49,12 @@ export default async function CommentsPage({ searchParams }: PageProps<'/comment
 				{filters.voteId ? (
 					<input type="hidden" name="voteId" value={filters.voteId} />
 				) : (
-					<FilterInput name="voteId" label="Poll ID" defaultValue="" className="w-72 font-mono" />
+					<FilterInput name="voteId" label="Poll ID" defaultValue="" className="sm:w-72 font-mono" />
 				)}
 				{filters.userId ? (
 					<input type="hidden" name="userId" value={filters.userId} />
 				) : (
-					<FilterInput name="userId" label="Author ID" defaultValue="" className="w-72 font-mono" />
+					<FilterInput name="userId" label="Author ID" defaultValue="" className="sm:w-72 font-mono" />
 				)}
 			</Filters>
 			{filters.voteId || filters.userId ? (
@@ -101,7 +101,7 @@ export default async function CommentsPage({ searchParams }: PageProps<'/comment
 						{comments.content.length ? (
 							comments.content.map((comment) => (
 								<TableRow key={comment.id}>
-									<TableCell className="max-w-md whitespace-normal">
+									<TableCell className="max-w-md min-w-64 whitespace-normal">
 										<p className={comment.deleted ? 'text-muted-foreground line-through' : undefined}>
 											{comment.content}
 										</p>
@@ -117,7 +117,7 @@ export default async function CommentsPage({ searchParams }: PageProps<'/comment
 											{comment.username}
 										</EntityLink>
 									</TableCell>
-									<TableCell className="max-w-xs whitespace-normal">
+									<TableCell className="max-w-xs min-w-48 whitespace-normal">
 										<EntityLink kind="poll" id={comment.voteId}>
 											{comment.voteTitle}
 										</EntityLink>

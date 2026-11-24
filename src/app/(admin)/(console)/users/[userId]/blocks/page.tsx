@@ -43,7 +43,7 @@ export default async function UserBlocksPage({ params, searchParams }: PageProps
 	const pathname = `/users/${user.id}/blocks`;
 
 	return (
-		<main className="flex flex-col gap-6 p-8">
+		<main className="flex flex-col gap-6 p-4 sm:p-8">
 			<PageHeader title={`Blocks: ${user.username}`} description={DIRECTIONS[direction].description}>
 				<Button variant="outline" size="sm" asChild>
 					<Link href={`/users/${user.id}`}>Back to user</Link>

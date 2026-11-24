@@ -28,7 +28,7 @@ export default async function VoteReportsPage({ searchParams }: PageProps<'/vote
 	);
 
 	return (
-		<main className="flex flex-col gap-6 p-8">
+		<main className="flex flex-col gap-6 p-4 sm:p-8">
 			<PageHeader
 				title="Poll reports"
 				description="Polls users reported, newest first. Deleted ones keep their title and owner. Opening this list is recorded in the audit log."
@@ -49,7 +49,7 @@ export default async function VoteReportsPage({ searchParams }: PageProps<'/vote
 						{reports.content.length ? (
 							reports.content.map((report) => (
 								<TableRow key={report.id}>
-									<TableCell className="max-w-md whitespace-normal break-words">
+									<TableCell className="max-w-md min-w-56 whitespace-normal break-words">
 										<EntityLink kind="poll" id={report.voteId}>
 											{report.voteTitle}
 										</EntityLink>

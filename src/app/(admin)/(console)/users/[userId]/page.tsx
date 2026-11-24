@@ -57,7 +57,7 @@ export default async function UserPage({ params }: PageProps<'/users/[userId]'>)
 	];
 
 	return (
-		<main className="flex flex-col gap-6 p-8">
+		<main className="flex flex-col gap-6 p-4 sm:p-8">
 			<PageHeader
 				title={
 					<span className="flex items-center gap-3">

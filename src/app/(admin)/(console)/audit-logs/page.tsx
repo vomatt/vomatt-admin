@@ -74,7 +74,7 @@ export default async function AuditLogsPage({ searchParams }: PageProps<'/audit-
 	]);
 
 	return (
-		<main className="flex flex-col gap-6 p-8">
+		<main className="flex flex-col gap-6 p-4 sm:p-8">
 			<PageHeader
 				title="Audit log"
 				description="Newest first. Entries are written asynchronously and may appear a moment late. Times are Taipei time."
@@ -95,15 +95,15 @@ export default async function AuditLogsPage({ searchParams }: PageProps<'/audit-
 				{filters.resourceId && resourceKind ? (
 					<input type="hidden" name="resourceId" value={filters.resourceId} />
 				) : (
-					<FilterInput name="resourceId" label="Resource ID" defaultValue={filters.resourceId} className="w-72 font-mono" />
+					<FilterInput name="resourceId" label="Resource ID" defaultValue={filters.resourceId} className="sm:w-72 font-mono" />
 				)}
 				{filters.userId ? (
 					<input type="hidden" name="userId" value={filters.userId} />
 				) : (
-					<FilterInput name="userId" label="Actor ID" defaultValue="" className="w-72 font-mono" />
+					<FilterInput name="userId" label="Actor ID" defaultValue="" className="sm:w-72 font-mono" />
 				)}
-				<FilterInput name="from" label="From" type="datetime-local" defaultValue={filters.from} className="w-52" />
-				<FilterInput name="to" label="Until" type="datetime-local" defaultValue={filters.to} className="w-52" />
+				<FilterInput name="from" label="From" type="datetime-local" defaultValue={filters.from} className="sm:w-52" />
+				<FilterInput name="to" label="Until" type="datetime-local" defaultValue={filters.to} className="sm:w-52" />
 			</Filters>
 			{filters.userId || (filters.resourceId && resourceKind) ? (
 				<div className="flex flex-wrap gap-2">
@@ -193,7 +193,7 @@ export default async function AuditLogsPage({ searchParams }: PageProps<'/audit-
 												</Badge>
 											)}
 										</TableCell>
-										<TableCell className="max-w-xs whitespace-normal text-muted-foreground">
+										<TableCell className="max-w-xs min-w-48 whitespace-normal text-muted-foreground">
 											{log.details ?? log.errorMessage ?? '—'}
 										</TableCell>
 									</TableRow>

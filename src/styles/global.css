@@ -2,7 +2,8 @@
    purpose: the :root/.dark base tokens, --primary-hover, --border-strong,
    --surface-soft, --field, the --sidebar-* tokens and --radius use shadcn's stone
    palette (keep them when syncing), the tone, link and nav-indicator tokens are
-   admin-only, and the data-* variants also match Radix data-state. */
+   admin-only, the data-* variants also match Radix data-state, and the
+   body[data-scroll-locked] rule is for Radix's scroll lock (web uses Base UI). */
 @import 'tailwindcss';
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -298,6 +299,14 @@
 
 	body {
 		@apply bg-background text-foreground;
+	}
+
+	/* Radix's scroll lock pads the body by the scrollbar's width, but the gutter
+	   above already keeps that space, so the page would move sideways */
+	@supports (scrollbar-gutter: stable) {
+		html body[data-scroll-locked] {
+			margin-right: 0 !important;
+		}
 	}
 }
 

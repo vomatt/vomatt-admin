@@ -26,7 +26,7 @@ export default async function LookupsPage({ searchParams }: PageProps<'/lookups'
 	const groups = byType(items);
 
 	return (
-		<main className="flex flex-col gap-6 p-8">
+		<main className="flex flex-col gap-6 p-4 sm:p-8">
 			<PageHeader title="Lookups" description="Dictionary items by type, inactive ones included." />
 			<Filters pathname="/lookups">
 				<FilterInput name="type" label="Type" placeholder="Every type" defaultValue={type} />

@@ -19,7 +19,7 @@ export default async function ContactMessagesPage({ searchParams }: PageProps<'/
 	);
 
 	return (
-		<main className="flex flex-col gap-6 p-8">
+		<main className="flex flex-col gap-6 p-4 sm:p-8">
 			<PageHeader
 				title="Contact"
 				description="Messages sent from the contact form on about.vomatt.com, newest first. Opening this list is recorded in the audit log."

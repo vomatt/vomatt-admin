@@ -1,3 +1,4 @@
+import { cn } from 'cn';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
@@ -7,10 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ANY } from '@/lib/search-params';
 
-/** A GET form: submitting puts the filters in the URL and starts at page 1. */
+/** A GET form: submitting puts the filters in the URL and starts at page 1. Two columns on phones. */
 export function Filters({ pathname, children }: { pathname: string; children: ReactNode }) {
 	return (
-		<form action={pathname} className="flex flex-wrap items-end gap-3">
+		<form action={pathname} className="grid grid-cols-2 items-end gap-3 sm:flex sm:flex-wrap">
 			{children}
 			<Button type="submit">Filter</Button>
 			<Button variant="ghost" asChild>
@@ -31,13 +32,13 @@ export function FilterInput({
 	'name' | 'defaultValue'
 >) {
 	return (
-		<div className="flex flex-col gap-1.5">
+		<div className="flex min-w-0 flex-col gap-1.5">
 			<Label htmlFor={`filter-${name}`}>{label}</Label>
 			<Input
 				id={`filter-${name}`}
 				name={name}
 				defaultValue={defaultValue}
-				className={className ?? 'w-48'}
+				className={cn('w-full', className ?? 'sm:w-48')}
 				{...props}
 			/>
 		</div>
@@ -57,10 +58,10 @@ export function FilterSelect({
 	options: Record<string, string>;
 }) {
 	return (
-		<div className="flex flex-col gap-1.5">
+		<div className="flex min-w-0 flex-col gap-1.5">
 			<Label htmlFor={`filter-${name}`}>{label}</Label>
 			<Select name={name} defaultValue={defaultValue || ANY}>
-				<SelectTrigger id={`filter-${name}`} className="w-40">
+				<SelectTrigger id={`filter-${name}`} className="w-full sm:w-40">
 					<SelectValue />
 				</SelectTrigger>
 				<SelectContent>

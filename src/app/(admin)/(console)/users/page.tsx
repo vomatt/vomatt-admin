@@ -80,30 +80,18 @@ export default async function UsersPage({ searchParams }: PageProps<'/users'>) {
 	);
 
 	return (
-		<main className="flex flex-col gap-6 p-8">
+		<main className="flex flex-col gap-6 p-4 sm:p-8">
 			<PageHeader
 				title="Users"
 				description="Every account, suspended ones included, newest first."
 			/>
-			<Card>
-				<CardHeader>
-					<CardTitle>New community account</CardTitle>
-					<CardDescription>
-						A group page that members publish as. The owner must be an active
-						user who is not a community account.
-					</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<CommunityForm />
-				</CardContent>
-			</Card>
 			<Filters pathname="/users">
 				<FilterInput
 					name="q"
 					label="Search"
 					placeholder="Username, email, phone, name"
 					defaultValue={filters.q}
-					className="w-64"
+					className="sm:w-64"
 				/>
 				<FilterInput
 					name="emailDomain"
@@ -152,14 +140,14 @@ export default async function UsersPage({ searchParams }: PageProps<'/users'>) {
 					label="Joined from"
 					type="date"
 					defaultValue={filters.joinedFrom}
-					className="w-40"
+					className="sm:w-40"
 				/>
 				<FilterInput
 					name="joinedTo"
 					label="Joined until"
 					type="date"
 					defaultValue={filters.joinedTo}
-					className="w-40"
+					className="sm:w-40"
 				/>
 			</Filters>
 
@@ -171,6 +159,18 @@ export default async function UsersPage({ searchParams }: PageProps<'/users'>) {
 				limit={users.limit}
 				total={users.total}
 			/>
+			<Card>
+				<CardHeader>
+					<CardTitle>New community account</CardTitle>
+					<CardDescription>
+						A group page that members publish as. The owner must be an active
+						user who is not a community account.
+					</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<CommunityForm />
+				</CardContent>
+			</Card>
 		</main>
 	);
 }

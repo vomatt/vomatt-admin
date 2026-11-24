@@ -14,7 +14,7 @@ export default async function TagsPage() {
 	const tags = await publicFetch<Tag[]>('/tags', { cache: 'no-store' });
 
 	return (
-		<main className="flex flex-col gap-6 p-8">
+		<main className="flex flex-col gap-6 p-4 sm:p-8">
 			<PageHeader title="Tags" description="Ordered by display order. Tags in use by a poll can't be deleted." />
 			<Card>
 				<CardHeader>
