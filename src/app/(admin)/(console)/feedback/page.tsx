@@ -34,7 +34,7 @@ export default async function FeedbackPage({ searchParams }: PageProps<'/feedbac
 	}
 
 	return (
-		<main className="flex flex-col gap-6 p-8">
+		<main className="flex flex-col gap-6 p-4 sm:p-8">
 			<PageHeader
 				title="Feedback"
 				description="Product feedback users sent from the app, newest first. Opening this list is recorded in the audit log."
@@ -43,7 +43,7 @@ export default async function FeedbackPage({ searchParams }: PageProps<'/feedbac
 				{filters.userId ? (
 					<input type="hidden" name="userId" value={filters.userId} />
 				) : (
-					<FilterInput name="userId" label="Sender ID" defaultValue="" className="w-72 font-mono" />
+					<FilterInput name="userId" label="Sender ID" defaultValue="" className="sm:w-72 font-mono" />
 				)}
 			</Filters>
 			{filters.userId ? (

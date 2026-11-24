@@ -33,10 +33,10 @@ export default async function PollsPage({ searchParams }: PageProps<'/polls'>) {
 	]);
 
 	return (
-		<main className="flex flex-col gap-6 p-8">
+		<main className="flex flex-col gap-6 p-4 sm:p-8">
 			<PageHeader title="Polls" description="Every poll, any audience, deleted ones included, newest first." />
 			<Filters pathname="/polls">
-				<FilterInput name="q" label="Search" placeholder="Title or description" minLength={2} defaultValue={filters.q} className="w-64" />
+				<FilterInput name="q" label="Search" placeholder="Title or description" minLength={2} defaultValue={filters.q} className="sm:w-64" />
 				<FilterSelect
 					name="status"
 					label="Status"
@@ -69,10 +69,12 @@ export default async function PollsPage({ searchParams }: PageProps<'/polls'>) {
 					<TableHeader>
 						<TableRow>
 							<TableHead>Poll</TableHead>
-							<TableHead>Creator</TableHead>
 							<TableHead>Status</TableHead>
-							<TableHead>Audience</TableHead>
 							<TableHead className="text-right">Turnout</TableHead>
+							<TableHead className="text-right">Comments</TableHead>
+							<TableHead className="text-right">Shares</TableHead>
+							<TableHead>Creator</TableHead>
+							<TableHead>Audience</TableHead>
 							<TableHead>Ends</TableHead>
 							<TableHead>Created</TableHead>
 						</TableRow>
@@ -81,27 +83,37 @@ export default async function PollsPage({ searchParams }: PageProps<'/polls'>) {
 						{polls.content.length ? (
 							polls.content.map(({ vote, deletedAt }) => (
 								<TableRow key={vote.id}>
-									<TableCell className="max-w-sm whitespace-normal">
+									<TableCell className="max-w-sm min-w-56 whitespace-normal">
 										<Link href={`/polls/${vote.id}`} className="font-medium hover:underline">
 											{vote.title}
 										</Link>
 									</TableCell>
 									<TableCell>
+										<PollStatusBadge status={pollStatus(vote)} deleted={deletedAt !== null} />
+									</TableCell>
+									<TableCell className="text-right tabular-nums">{vote.participantCount}</TableCell>
+									<TableCell className="text-right tabular-nums">
+										{vote.commentCount ? (
+											<Link href={`/comments?voteId=${vote.id}`} className="text-link hover:underline">
+												{vote.commentCount}
+											</Link>
+										) : (
+											0
+										)}
+									</TableCell>
+									<TableCell className="text-right tabular-nums">{vote.shareCount}</TableCell>
+									<TableCell>
 										<EntityLink kind="user" id={vote.creatorId}>
 											{vote.creatorUsername}
 										</EntityLink>
 									</TableCell>
-									<TableCell>
-										<PollStatusBadge status={pollStatus(vote)} deleted={deletedAt !== null} />
-									</TableCell>
 									<TableCell className="text-muted-foreground">{AUDIENCE_LABELS[vote.audience]}</TableCell>
-									<TableCell className="text-right tabular-nums">{vote.participantCount}</TableCell>
 									<TableCell className="text-muted-foreground">{formatDateTime(vote.endTime)}</TableCell>
 									<TableCell className="text-muted-foreground">{formatDateTime(vote.createdAt)}</TableCell>
 								</TableRow>
 							))
 						) : (
-							<EmptyRow colSpan={7}>No polls match these filters.</EmptyRow>
+							<EmptyRow colSpan={9}>No polls match these filters.</EmptyRow>
 						)}
 					</TableBody>
 				</Table>

@@ -34,7 +34,7 @@ export function ContactMessageRow({ item, received }: { item: AdminContactMessag
 				<EmailLink email={item.email} className="underline underline-offset-4" />
 			</TableCell>
 			<TableCell className="align-top">{item.locale}</TableCell>
-			<TableCell className="max-w-xl align-top whitespace-normal">
+			<TableCell className="max-w-xl min-w-64 align-top whitespace-normal">
 				<Dialog open={open} onOpenChange={setOpen}>
 					<DialogTrigger asChild>
 						<button

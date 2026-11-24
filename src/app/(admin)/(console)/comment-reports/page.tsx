@@ -28,7 +28,7 @@ export default async function CommentReportsPage({ searchParams }: PageProps<'/c
 	);
 
 	return (
-		<main className="flex flex-col gap-6 p-8">
+		<main className="flex flex-col gap-6 p-4 sm:p-8">
 			<PageHeader
 				title="Comment reports"
 				description="Comments users reported, newest first. Deleted ones keep their text. Opening this list is recorded in the audit log."
@@ -49,7 +49,7 @@ export default async function CommentReportsPage({ searchParams }: PageProps<'/c
 						{reports.content.length ? (
 							reports.content.map((report) => (
 								<TableRow key={report.id}>
-									<TableCell className="max-w-md whitespace-normal">
+									<TableCell className="max-w-md min-w-64 whitespace-normal">
 										<p
 												className={
 													report.commentDeleted

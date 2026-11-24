@@ -76,7 +76,7 @@ export default async function PollPage({ params }: PageProps<'/polls/[pollId]'>)
 	];
 
 	return (
-		<main className="flex flex-col gap-6 p-8">
+		<main className="flex flex-col gap-6 p-4 sm:p-8">
 			<PageHeader
 				title={
 					<span className="flex flex-wrap items-center gap-3">
