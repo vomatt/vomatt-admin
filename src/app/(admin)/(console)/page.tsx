@@ -10,11 +10,16 @@ export const metadata: Metadata = { title: 'Overview' };
 
 interface Stat {
 	label: string;
-	value: number;
+	/** null when the count couldn't be read */
+	value: number | null;
 	href?: string;
 }
 
 const number = new Intl.NumberFormat('en');
+
+function formatCount(value: number | null) {
+	return value === null ? '—' : number.format(value);
+}
 
 /** How many rows a list endpoint holds, read from a one-row page; the stats endpoint has no count for these. */
 async function total(path: string, filters: Record<string, string> = {}) {
@@ -22,14 +27,13 @@ async function total(path: string, filters: Record<string, string> = {}) {
 }
 
 export default async function AdminHomePage() {
-	const [stats, pollsScheduled, comments, commentReports, pollReports, feedback, contactMessages] = await Promise.all([
+	// The report, feedback and contact lists write a VIEW audit entry on every read, so they aren't counted here
+	const [stats, [pollsScheduled, comments]] = await Promise.all([
 		adminFetch<AdminStats>('/admin/stats'),
-		total('/admin/votes', { status: 'scheduled', deleted: 'false' }),
-		total('/admin/comments'),
-		total('/admin/comment-reports'),
-		total('/admin/vote-reports'),
-		total('/admin/feedback'),
-		total('/admin/contact-messages'),
+		Promise.allSettled([
+			total('/admin/votes', { status: 'scheduled', deleted: 'false' }),
+			total('/admin/comments', { deleted: 'false' }),
+		]).then((results) => results.map((result) => (result.status === 'fulfilled' ? result.value : null))),
 	]);
 
 	const sections: { title: string; stats: Stat[] }[] = [
@@ -54,16 +58,7 @@ export default async function AdminHomePage() {
 			title: 'Activity',
 			stats: [
 				{ label: 'Ballots, last 24 hours', value: stats.ballotsLast24Hours },
-				{ label: 'Comments', value: comments, href: '/comments' },
-			],
-		},
-		{
-			title: 'Inbox',
-			stats: [
-				{ label: 'Comment reports', value: commentReports, href: '/comment-reports' },
-				{ label: 'Poll reports', value: pollReports, href: '/vote-reports' },
-				{ label: 'Feedback', value: feedback, href: '/feedback' },
-				{ label: 'Contact messages', value: contactMessages, href: '/contact-messages' },
+				{ label: 'Comments', value: comments, href: '/comments?deleted=false' },
 			],
 		},
 	];
@@ -82,7 +77,7 @@ export default async function AdminHomePage() {
 								<Card size="sm" className={href ? 'h-full transition-colors hover:bg-muted/50' : 'h-full'}>
 									<CardHeader>
 										<CardDescription>{label}</CardDescription>
-										<CardTitle className="text-2xl tabular-nums sm:text-3xl">{number.format(value)}</CardTitle>
+										<CardTitle className="text-2xl tabular-nums sm:text-3xl">{formatCount(value)}</CardTitle>
 									</CardHeader>
 								</Card>
 							);
@@ -91,7 +86,7 @@ export default async function AdminHomePage() {
 									{href ? (
 										<Link
 											href={href}
-											aria-label={`${title}: ${label}, ${number.format(value)}`}
+											aria-label={`${title}: ${label}, ${formatCount(value)}`}
 											className="block h-full rounded-xl focus-visible:outline-2 focus-visible:outline-ring"
 										>
 											{card}

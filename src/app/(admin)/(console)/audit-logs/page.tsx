@@ -102,8 +102,8 @@ export default async function AuditLogsPage({ searchParams }: PageProps<'/audit-
 				) : (
 					<FilterInput name="userId" label="Actor ID" defaultValue="" className="sm:w-72 font-mono" />
 				)}
-				<FilterInput name="from" label="From" type="datetime-local" defaultValue={filters.from} className="w-52" />
-				<FilterInput name="to" label="Until" type="datetime-local" defaultValue={filters.to} className="w-52" />
+				<FilterInput name="from" label="From" type="datetime-local" defaultValue={filters.from} className="sm:w-52" />
+				<FilterInput name="to" label="Until" type="datetime-local" defaultValue={filters.to} className="sm:w-52" />
 			</Filters>
 			{filters.userId || (filters.resourceId && resourceKind) ? (
 				<div className="flex flex-wrap gap-2">

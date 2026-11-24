@@ -94,7 +94,7 @@ export default async function PollsPage({ searchParams }: PageProps<'/polls'>) {
 									<TableCell className="text-right tabular-nums">{vote.participantCount}</TableCell>
 									<TableCell className="text-right tabular-nums">
 										{vote.commentCount ? (
-											<Link href={`/comments?voteId=${vote.id}`} className="text-link hover:underline">
+											<Link href={`/comments?voteId=${vote.id}&deleted=false`} className="text-link hover:underline">
 												{vote.commentCount}
 											</Link>
 										) : (
